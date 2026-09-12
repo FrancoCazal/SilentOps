@@ -128,9 +128,6 @@ approved by the technician leaving the floor.
   orders are read to build the proposal and written back on approval; the
   read-only adapter is the only module that knows the provider's tool names, so
   the model can never name a write tool.
-- **Trigger.dev** — the scheduled shift-boundary run. The cron is not decoration:
-  it *is* the product's trigger, the reason the agent exists without anyone
-  prompting it.
 - **Auth0** — the M2M scope the write boundary verifies (`write:workspace`,
   `send:channel`, `schedule:job`) before every action, with an idempotency key.
 - **OpenAI / OpenRouter** — the model, with a demonstrated cross-provider
@@ -139,6 +136,15 @@ approved by the technician leaving the floor.
 
 Sponsor count is not a judging criterion; each tool above carries a distinct,
 visible part of the one workflow.
+
+**Scheduling — labelled accurately.** The detector is a deterministic scheduled
+job, and that schedule is the product's trigger. It runs today through
+`packages/loop-core/src/jobs/followup.ts`, an **in-process** scheduler that
+reports `durable: false`, plus the reproducible manual run
+`npm run silentops:detect -w loop-core`. **Trigger.dev is not installed in this
+build.** The `JobScheduler` interface exists so it can be swapped in without
+touching the boundary, but we do not claim a durable managed cron we did not
+wire, and the video must not imply one.
 
 ## Evidence for the judging criteria
 
