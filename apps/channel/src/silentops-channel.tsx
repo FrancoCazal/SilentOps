@@ -192,6 +192,10 @@ export async function runLoop(
   thread: SlackThread,
   origin: RunOrigin = "detector",
 ): Promise<Proposal | undefined> {
+  // Nadie mas vence propuestas: si no se hace aca, una pending vencida bloquea
+  // al detector para siempre (hallazgo de la revision de Codex, 15:30).
+  const expired = proposals.expireOverdue(new Date());
+  if (expired.length) log("proposals expired", { ids: expired.map((p) => p.id) });
   const live = liveProposalFor(evt.id, proposals.list());
   if (live) {
     log("event already has a live proposal", { eventId: evt.id, proposalId: live.id, status: live.status });
@@ -233,6 +237,9 @@ export async function runLoop(
             await thread.post(highRiskCard(proposal, by));
             throw new Error("riesgo alto: requiere confirmacion explicita en la card de abajo; nada se ejecuto");
           }
+          // La card de David muestra el fallo pero pierde los botones: dejar
+          // uno para reintentar. La idempotencia omite lo que ya se ejecuto.
+          await thread.post(retryCard(proposal, e));
           throw e;
         } finally {
           executing = undefined;
@@ -268,6 +275,28 @@ export function startDetectorLoop(opts: { everyMs?: number } = {}): () => void {
 }
 
 // ───────────────────────── cards propias: resultado, riesgo alto, estado, error ─────────────────────────
+
+function retryCard(p: Proposal, e: unknown) {
+  return (
+    <Message accent="#ECB22E">
+      <Header>La ejecucion fallo a mitad de camino</Header>
+      <Section>
+        <Markdown>{`\`${String(e).slice(0, 300)}\`
+
+Lo ya ejecutado no se repite (idempotencia). Podés reintentar lo que falta o rechazar.`}</Markdown>
+      </Section>
+      <Context>{`proposal:${p.id}`}</Context>
+      <Actions>
+        <Button value="approve" style="primary" onClick={(c) => decide(c, p.id, "approve")}>
+          Reintentar
+        </Button>
+        <Button value="reject" style="danger" onClick={(c) => decide(c, p.id, "reject")}>
+          Rechazar
+        </Button>
+      </Actions>
+    </Message>
+  );
+}
 
 function highRiskCard(p: Proposal, by: string) {
   return (

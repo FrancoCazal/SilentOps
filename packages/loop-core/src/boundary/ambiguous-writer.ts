@@ -144,7 +144,10 @@ async function createHandover(args: Record<string, unknown>, d: Deps): Promise<u
   const capped = kept.slice(0, MAX_HANDOVER_BULLETS);
   if (kept.length > capped.length) d.log("bullets recortados a cinco", { title, total: kept.length });
 
-  const content = str(args.content) ?? renderHandover({
+  // args.content (cuerpo libre) NO se acepta: saltearia el filtro de fuentes y
+  // el tope de cinco. El handover se renderiza siempre desde bullets con fuente.
+  if (str(args.content)) d.log("handover args.content ignorado: el cuerpo sale de bullets con fuente", { title });
+  const content = renderHandover({
     title,
     bullets: capped,
     openWorkOrders: workOrderLines(args.openWorkOrders),
