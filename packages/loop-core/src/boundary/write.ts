@@ -7,10 +7,11 @@
  * Ambiguous salen del workspace vivo por MCP y no se inventan; R4 los lista al
  * arrancar y R2 registra el ejecutor real contra esa lista.
  */
-import { verifyScope } from "./auth0";
+import { getServiceToken, isAuth0Configured, verifyScope } from "./auth0";
 import { idempotencyKey, remember, seen, recall } from "./idempotency";
 import { outbound } from "../channels/outbound";
 import { effectiveActions, type Proposal, type ProposedAction } from "../approval/types";
+import { get, setStatus } from "../approval/store";
 import type { Logger } from "../observability/log";
 
 export const SCOPE: Record<ProposedAction["kind"], string> = {
@@ -45,6 +46,10 @@ export class NotApprovedError extends Error {
   status = 409;
 }
 
+export class HighRiskError extends Error {
+  status = 412;
+}
+
 export async function executeApproved(
   p: Proposal,
   opts: { serviceToken?: string; log: Logger },
@@ -56,9 +61,17 @@ export async function executeApproved(
   const actions = effectiveActions(p);
   const results: ExecutionResult[] = [];
 
+  if (!isAuth0Configured() && process.env.ALLOW_UNVERIFIED_WRITES === "1") {
+    opts.log("AUTH0 BYPASS: scope no verificado (ALLOW_UNVERIFIED_WRITES=1, solo desarrollo)", {
+      proposalId: p.id,
+    });
+  }
+
   for (const [index, action] of actions.entries()) {
     // 401/403 antes de tocar nada.
-    await verifyScope(opts.serviceToken, SCOPE[action.kind]);
+    const scope = SCOPE[action.kind];
+    const payload = await verifyScope(opts.serviceToken, scope);
+    opts.log("scope verified", { index, kind: action.kind, scope, verified: payload.sub !== "dev-bypass" });
 
     const key = idempotencyKey(p.sourceEventId, p.id, index);
     if (await seen(key)) {
@@ -74,6 +87,39 @@ export async function executeApproved(
   }
 
   return results;
+}
+
+/** Entrada del boton Aprobar: registra la decision humana antes de ejecutar. */
+export async function approveAndExecute(
+  proposalId: string,
+  by: string,
+  opts: { log: Logger; confirmHighRisk?: boolean },
+): Promise<ExecutionResult[]> {
+  const p = get(proposalId);
+  if (!p) throw new Error(`proposal ${proposalId} no existe`);
+  // "approved" tambien entra: es el reintento del boton despues de que fallo
+  // el token o la ejecucion. La idempotencia omite lo que ya se ejecuto, asi
+  // que un segundo click nunca duplica. rejected / expired no se reabren.
+  if (p.status !== "pending" && p.status !== "edited" && p.status !== "approved") {
+    throw new NotApprovedError(`proposal ${p.id} no se puede aprobar (status: ${p.status})`);
+  }
+  if (p.risk === "high" && !opts.confirmHighRisk) {
+    throw new HighRiskError(`proposal ${p.id} de riesgo alto requiere confirmacion explicita`);
+  }
+
+  if (p.status === "approved") {
+    opts.log("retrying approved proposal", { proposalId: p.id, by });
+  } else {
+    setStatus(p.id, p.status === "edited" ? "edited" : "approved", by);
+  }
+  // No revertir el status si falla el token o la ejecucion: se reintenta con
+  // el mismo boton.
+  const serviceToken = isAuth0Configured() ? await getServiceToken() : undefined;
+  return executeApproved(p, { serviceToken, log: opts.log });
+}
+
+export function rejectProposal(proposalId: string, by: string): Proposal {
+  return setStatus(proposalId, "rejected", by);
 }
 
 async function dispatch(action: ProposedAction, key: string): Promise<unknown> {

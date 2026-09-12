@@ -21,3 +21,6 @@ export type { ModelRef, ProviderName, Attempt } from "./model/with-fallback";
 export { log, newRunId, loggerFor } from "./observability/log";
 export type { Logger } from "./observability/log";
 export { inProcessScheduler, dueJobs, pendingJobs } from "./jobs/followup";
+export { readTool, setWorkplaceClientForTests } from "./boundary/workplace-mcp";
+export { fileIdempotencyStore, fileProposalStore, defaultStatePaths } from "./boundary/file-store";
+export { approveAndExecute, rejectProposal, HighRiskError, NotApprovedError } from "./boundary/write";
