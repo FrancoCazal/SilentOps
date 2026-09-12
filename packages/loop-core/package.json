@@ -1,0 +1,24 @@
+{
+  "name": "loop-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Nuestra capa: canal -> agente -> propuesta -> aprobacion humana -> write boundary. Construida durante el hackathon.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts": "./src/contracts.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"src/**/*.test.ts\" \"evals/**/*.test.ts\"",
+    "eval": "node --env-file=../../.env --import tsx --test \"evals/**/*.test.ts\"",
+    "tools:list": "node --env-file=../../.env --import tsx scripts/list-workplace-tools.ts",
+    "first-calls": "node --env-file=../../.env --import tsx scripts/first-calls.ts"
+  },
+  "dependencies": {
+    "@copilotkit/runtime": "1.70.3",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "agent-core": "*",
+    "jose": "^5.9.6"
+  }
+}

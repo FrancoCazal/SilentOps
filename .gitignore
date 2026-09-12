@@ -13,3 +13,8 @@ apps/mobile/.expo/
 
 # Web approval and attempt metadata (not task storage)
 .data/
+
+# Documentos internos del equipo (planificacion, temas, relevamiento de otros
+# equipos). Los coding agents los leen localmente. Si al final el equipo quiere
+# publicarlos como parte del relato, se saca esta linea.
+docs/
