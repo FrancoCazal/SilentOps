@@ -50,6 +50,7 @@ export const PASS_THROUGH_ALLOWLIST: ReadonlySet<string> = new Set([
 
 const READ_TOOLS = {
   searchDocuments: "search_workspace",
+  listDocuments: "list_documents",
   listTasks: "list_tasks",
   listUsers: "list_users",
 } as const;
@@ -146,13 +147,16 @@ async function createHandover(args: Record<string, unknown>, d: Deps): Promise<u
   });
   const doc = unwrap(result);
   const documentId = str(doc?.id);
-  d.log("handover document created", { title, documentId, bullets: capped.length });
+  // create_document y get_document no traen URL; search_workspace si. Es una
+  // lectura mas, y es lo que va al aviso de Slack (F-05).
+  const url = str(doc?.url) ?? (documentId ? await findDocumentUrl(documentId, title, d.read, d.log) : undefined);
+  d.log("handover document created", { title, documentId, url, bullets: capped.length });
   return {
     tool: AMBIGUOUS_WRITE_TOOLS.createDocument,
     skipped: false,
     documentId,
     title,
-    url: str(doc?.url) ?? str(doc?.link),
+    url,
     bullets: capped.length,
     droppedWithoutSource: dropped.length,
   };
@@ -233,14 +237,36 @@ export function renderHandover(input: {
   return lines.join("\n");
 }
 
+/**
+ * Duplicados se buscan en list_documents, NO en search_workspace: la busqueda
+ * devuelve tambien los documentos en la papelera y sin `trashed_at`, asi que
+ * un handover de prueba borrado "existiria" para siempre. list_documents trae
+ * `trashed_at` y solo lo vivo cuenta.
+ */
 async function findDocumentByTitle(
   title: string,
   read: WriteCall,
 ): Promise<{ id: string } | undefined> {
-  const found = unwrapRows(await read(READ_TOOLS.searchDocuments, { query: title, modules: ["docs"], limit: 20 }));
-  const hit = found.find((r) => str(r.title)?.trim().toLowerCase() === title.trim().toLowerCase() && !r.trashed_at);
+  const docs = unwrapRows(await read(READ_TOOLS.listDocuments, {}));
+  const needle = title.trim().toLowerCase();
+  const hit = docs.find((r) => str(r.title)?.trim().toLowerCase() === needle && !r.trashed_at);
   const id = hit && str(hit.id);
   return id ? { id } : undefined;
+}
+
+async function findDocumentUrl(
+  id: string,
+  title: string,
+  read: WriteCall,
+  log: Deps["log"],
+): Promise<string | undefined> {
+  try {
+    const rows = unwrapRows(await read(READ_TOOLS.searchDocuments, { query: title, modules: ["docs"], limit: 20 }));
+    return absoluteUrl(str(rows.find((r) => str(r.id) === id)?.url));
+  } catch (e) {
+    log("document url lookup failed (non-fatal)", { id, error: String(e) });
+    return undefined;
+  }
 }
 
 // ───────────────────────────── ordenes de trabajo ─────────────────────────────
@@ -338,6 +364,13 @@ async function passThrough(
 }
 
 // ───────────────────────────── helpers ─────────────────────────────
+
+/** search_workspace devuelve rutas relativas (`/docs/<id>`). La base es la app de Ambiguous. */
+export function absoluteUrl(url: string | undefined, base = process.env.AMBIGUOUS_APP_URL ?? "https://app.ambiguous.ai"): string | undefined {
+  if (!url) return undefined;
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${base.replace(/\/+$/, "")}/${url.replace(/^\/+/, "")}`;
+}
 
 function str(v: unknown): string | undefined {
   return typeof v === "string" && v.length ? v : undefined;

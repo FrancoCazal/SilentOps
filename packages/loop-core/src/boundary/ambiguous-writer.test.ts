@@ -5,6 +5,7 @@ import {
   renderHandover,
   WriteNotAllowedError,
   WRITE_INTENTS,
+  absoluteUrl,
 } from "./ambiguous-writer";
 
 const NOW = () => new Date("2026-09-12T08:45:00.000Z");
@@ -31,7 +32,8 @@ function harness(overrides: { docs?: Array<Record<string, unknown>>; users?: typ
       return { content: [{ type: "text", text: JSON.stringify({ id: "doc-new", title: args.title }) }] };
     },
     read: async (tool, args) => {
-      if (tool === "search_workspace") return { data: overrides.docs ?? [] };
+      if (tool === "list_documents") return { data: overrides.docs ?? [] };
+      if (tool === "search_workspace") return { data: [{ id: "doc-new", title: args.query, url: "/docs/doc-new" }, { id: "doc-trashed", title: args.query }] };
       if (tool === "list_tasks") return { data: TASKS };
       if (tool === "list_users") return { data: overrides.users ?? USERS, q: args.q };
       throw new Error(`read inesperado ${tool}`);
@@ -72,6 +74,7 @@ describe("ambiguous-writer", () => {
     assert.match(content, /OT-243 · Revisar burlete/);
     assert.match(content, /no opera equipos/);
     assert.equal(out.documentId, "doc-new");
+    assert.equal(out.url, "https://app.ambiguous.ai/docs/doc-new");
     assert.equal(out.bullets, 5);
     assert.equal(out.droppedWithoutSource, 1);
     assert.ok(h.logs.includes("bullets sin fuente descartados"));
@@ -82,8 +85,11 @@ describe("ambiguous-writer", () => {
     assert.match(String(h.writes[0]!.args.content), /Sin novedades con fuente durante el turno/);
   });
 
-  it("create-handover: si ya existe un documento con ese titulo no lo crea de nuevo", async () => {
-    h = harness({ docs: [{ id: "doc-old", title: "handover noche 2026-09-12" }] });
+  it("create-handover: si ya existe un documento VIVO con ese titulo no lo crea de nuevo; uno en papelera no cuenta", async () => {
+    h = harness({ docs: [{ id: "doc-trashed", title: "handover noche 2026-09-12", trashed_at: "2026-09-12T00:00:00Z" }] });
+    await h.writer(WRITE_INTENTS.createHandover, { title: "Handover Noche 2026-09-12", bullets: [] });
+    assert.equal(h.writes.length, 1, "un doc en papelera no bloquea la creacion");
+    h = harness({ docs: [{ id: "doc-old", title: "handover noche 2026-09-12", trashed_at: null }] });
     const out = (await h.writer(WRITE_INTENTS.createHandover, { title: "Handover Noche 2026-09-12", bullets: [] })) as Record<string, unknown>;
     assert.equal(h.writes.length, 0);
     assert.equal(out.skipped, true);
@@ -131,6 +137,12 @@ describe("ambiguous-writer", () => {
     assert.equal(h.writes.length, 0);
     await h.writer("send_message", { channel_id: "c1", content: "hola" });
     assert.deepEqual(h.writes, [{ tool: "send_message", args: { channel_id: "c1", content: "hola" } }]);
+  });
+
+  it("absoluteUrl vuelve absoluta la ruta relativa de search_workspace y respeta las absolutas", () => {
+    assert.equal(absoluteUrl("/docs/abc", "https://app.ambiguous.ai/"), "https://app.ambiguous.ai/docs/abc");
+    assert.equal(absoluteUrl("https://x.y/docs/abc", "https://app.ambiguous.ai"), "https://x.y/docs/abc");
+    assert.equal(absoluteUrl(undefined), undefined);
   });
 
   it("renderHandover es determinista y cita cada fuente", () => {
