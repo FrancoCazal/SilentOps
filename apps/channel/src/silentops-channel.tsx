@@ -205,10 +205,26 @@ export async function runLoop(
   try {
     // El prompt de dominio + el vocabulario de escritura del boundary: sin
     // esto el modelo manda payloads sin `tool` y la propuesta sale vacia.
-    proposal = await handleEvent(evt, { log, prompt: withWriteVocabulary(systemPrompt()) });
+    const prompt = withWriteVocabulary(systemPrompt());
+    proposal = await handleEvent(evt, { log, prompt });
+    // Gemini a veces devuelve una respuesta vacia (sin texto ni tool calls).
+    // Un reintento resuelve casi siempre; si no, se avisa, no se calla.
+    if (proposal.actions.length === 0) {
+      log("model returned no actions, retrying once", { eventId: evt.id, runId: proposal.runId });
+      proposal = await handleEvent(evt, { log, prompt });
+    }
   } catch (e) {
     log("handleEvent failed", { eventId: evt.id, error: String(e) });
     await thread.post(errorCard("El agente no pudo preparar la propuesta", e));
+    return undefined;
+  }
+  if (proposal.actions.length === 0) {
+    log("model returned no actions twice", { eventId: evt.id });
+    await thread.post(
+      statusCard(
+        `El detector encontró la ausencia (${absenceSentence(evt) ?? evt.id}) pero el agente no propuso ninguna acción en dos intentos. No se publica una card vacía: revisar el log del run ${proposal.runId}.`,
+      ),
+    );
     return undefined;
   }
   proposals.save(proposal);
