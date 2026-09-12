@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { executeApproved, approveAndExecute, rejectProposal, HighRiskError, registerWorkspaceExecutor, registerJobScheduler, NotApprovedError } from "./write";
+import { executeApproved, approveAndExecute, rejectProposal, HighRiskError, registerWorkspaceExecutor, registerJobScheduler, NotApprovedError, SCOPE } from "./write";
 import { registerOutbound } from "../channels/outbound";
 import { memoryStore, setIdempotencyStore } from "./idempotency";
 import * as proposals from "../approval/store";
@@ -119,8 +119,8 @@ describe("write boundary", () => {
       { proposalId: "p1" },
     ]]);
     assert.deepEqual(entries.filter(([msg]) => msg === "scope verified"), [
-      ["scope verified", { index: 0, kind: "workspace.write", scope: "write:workspace", verified: false }],
-      ["scope verified", { index: 1, kind: "channel.send", scope: "send:channel", verified: false }],
+      ["scope verified", { index: 0, kind: "workspace.write", scope: SCOPE["workspace.write"], verified: false }],
+      ["scope verified", { index: 1, kind: "channel.send", scope: SCOPE["channel.send"], verified: false }],
     ]);
     await executeApproved(proposal(), { log });
     assert.equal(entries.filter(([msg]) => msg.startsWith("AUTH0 BYPASS")).length, 2);
