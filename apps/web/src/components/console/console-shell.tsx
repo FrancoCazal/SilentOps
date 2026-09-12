@@ -29,11 +29,17 @@ const sections: readonly { id: ConsoleSection; label: string; href: string }[] =
 export function ConsoleShell({
   active,
   toolbar,
+  badge = "Sample data · read-only",
+  notice,
   children,
 }: {
   active: ConsoleSection;
   /** Right-hand side of the topbar; the Shift view puts its clock here. */
   toolbar?: ReactNode;
+  /** Provenance marker. Live routes override the sample-data default. */
+  badge?: ReactNode;
+  /** Banner under the topbar, for why a view is degraded or synthetic. */
+  notice?: ReactNode;
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -107,10 +113,12 @@ export function ConsoleShell({
             <span className={styles.channel}>{CHANNEL}</span>
           </div>
           <div className={styles.topbarRight}>
-            <span className={styles.demoBadge}>Sample data · read-only</span>
+            <span className={styles.demoBadge}>{badge}</span>
             {toolbar}
           </div>
         </header>
+
+        {notice ? <div className={styles.notice}>{notice}</div> : null}
 
         {children}
 
