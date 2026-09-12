@@ -1,6 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import {
+  CHANNEL,
+  EXPECTED_RECORD,
+  SUMMARY,
+  evidence,
+  tabs,
+  views,
+  workOrders,
+  type View,
+} from "@/components/handover/handover-data";
 import styles from "./landing.module.css";
 
 /**
@@ -10,79 +20,15 @@ import styles from "./landing.module.css";
  * operations channel. This is a faithful preview of that card, not a second
  * product surface — nothing here calls the agent or writes anything.
  *
+ * Copy and demo data come from `handover-data.ts`, shared with /console so the
+ * two surfaces cannot contradict each other.
+ *
  * The search trace is reproduced verbatim, including the Spanish document name
  * it looks for. SILENTOPS.md requires the absence to read as a statement
  * ("0 results"), never as blank space.
  *
  * Design source: "Console approval states mockup/SilentOps App.dc.html".
  */
-
-type View = "pending" | "approved" | "rejected" | "silent";
-
-const tabs: readonly { id: View; label: string }[] = [
-  { id: "pending", label: "Pending" },
-  { id: "approved", label: "Approved" },
-  { id: "rejected", label: "Rejected" },
-  { id: "silent", label: "Silent" },
-];
-
-/** Per-state copy. Mirrors `renderVals()` in the mockup. */
-const views: Record<
-  View,
-  {
-    clock: string;
-    result: string;
-    resultMissing: boolean;
-    note: string;
-    subline: string;
-    ordersLabel: string;
-  }
-> = {
-  pending: {
-    clock: "05:45",
-    result: "0 results",
-    resultMissing: true,
-    note: "matches: [] · deterministic query, no match in the shift's document index.",
-    subline: "pending approval · nothing written yet",
-    ordersLabel: "Work orders to reassign to Bruno:",
-  },
-  approved: {
-    clock: "05:47",
-    result: "0 results",
-    resultMissing: true,
-    note: "matches: [] · document created just now, after Ana's approval.",
-    subline: "proposal applied · write authorized by a human",
-    ordersLabel: "Work orders reassigned to Bruno:",
-  },
-  rejected: {
-    clock: "05:47",
-    result: "0 results",
-    resultMissing: true,
-    note: "matches: [] · the proposal was discarded; nothing was written.",
-    subline: "proposal discarded · nothing written",
-    ordersLabel: "Work orders still unassigned:",
-  },
-  silent: {
-    clock: "05:45",
-    result: "1 result",
-    resultMissing: false,
-    note: "matches: [1] · a handover document already exists for this shift.",
-    subline: "no proposal · the detector found nothing to do",
-    ordersLabel: "",
-  },
-};
-
-const evidence = [
-  "Cold room 3: temperature alert already escalated by a technician at 02:10",
-  "Backup generator: check still pending from the previous shift",
-  "Loading dock sensor: follow-up open, not closed",
-] as const;
-
-const workOrders = [
-  { id: "#WO-1042", title: "Cold room inspection" },
-  { id: "#WO-1043", title: "Backup generator check" },
-  { id: "#WO-1051", title: "Loading dock sensor" },
-] as const;
 
 /** Visual marker that a claim carries a source; not a navigable link here. */
 function SourceTag() {
@@ -117,7 +63,7 @@ export function ApprovalStates() {
 
       <div className={styles.slackFrame}>
         <div className={styles.slackHeader}>
-          <span className={styles.slackChannel}>#operaciones-hub-frio</span>
+          <span className={styles.slackChannel}>{CHANNEL}</span>
           <span className={styles.slackDivider} aria-hidden="true">
             ·
           </span>
@@ -139,8 +85,8 @@ export function ApprovalStates() {
               <span className={styles.traceGlyph} aria-hidden="true">
                 ⌕
               </span>{" "}
-              searched Documents for &ldquo;Handover Noche 2026-09-12&rdquo; at
-              05:45 <span className={styles.traceArrow}>→</span>{" "}
+              searched Documents for &ldquo;{EXPECTED_RECORD}&rdquo; at 05:45{" "}
+              <span className={styles.traceArrow}>→</span>{" "}
               <span
                 className={current.resultMissing ? styles.missing : styles.present}
               >
@@ -182,11 +128,7 @@ export function ApprovalStates() {
               </div>
 
               <div className={styles.cardBody}>
-                <p className={styles.cardSummary}>
-                  Ana is closing her shift with 3 open work orders and no
-                  handover; I will prepare the document and reassign them to
-                  Bruno.
-                </p>
+                <p className={styles.cardSummary}>{SUMMARY}</p>
 
                 <div className={styles.cardGroup}>
                   <span className={styles.panelLabel}>Evidence</span>

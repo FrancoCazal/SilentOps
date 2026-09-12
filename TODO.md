@@ -17,8 +17,9 @@ credencial para poder verse o testearse.
 | `apps/channel/src/approval-card.test.tsx` | ✅ 19 tests offline, sin credenciales | — |
 | Preview en Block Kit (`npm run preview:card -w channel`) | ✅ hecho, sin credenciales | — |
 | Wiring detector → agente → card → boundary | ✅ **hecho por Rodrigo** (`silentops.tsx`, `channel.tsx:60`) | — |
-| La card posteada en un thread real de Slack | ⛔ no | `CHANNEL_CODE` + `INTELLIGENCE_API_KEY` |
-| El click de Aprobar escribiendo de verdad en Ambiguous | ⛔ no | `AMBIGUOUS_API_KEY` + Auth0 (o `ALLOW_UNVERIFIED_WRITES=1`) |
+| La card posteada en un thread real de Slack | 🟡 **desbloqueado** — las keys están en `.env` | correrlo y verificarlo |
+| El click de Aprobar escribiendo de verdad en Ambiguous | 🟡 `AMBIGUOUS_API_KEY` está; Auth0 no (corre con bypass) | prueba end to end |
+| Plano del fallback del video | ⛔ **roto** — falta un 2º provider | `OPENAI_API_KEY` u `OPENROUTER_API_KEY` |
 | Video de 2 minutos | ⏳ en progreso | nada — se puede filmar con el preview |
 | Bloque SilentOps arriba del `README.md` | ✅ hecho · + cómo ver la card sin credenciales | — |
 | `SUBMISSION.md` (4 bloques) | ⏳ pendiente | nada |
@@ -37,19 +38,44 @@ en su tabla de prioridades la fila 2 nombra explícitamente mi card:
 
 Ivan **coordina**, pero cada dueño de cuenta carga su bloque.
 
-| Credencial | Para qué | Sin ella |
-|---|---|---|
-| `CHANNEL_CODE` | `createChannel({ name })` en `channel.tsx` | `dev:slack` no arranca |
-| `INTELLIGENCE_API_KEY` | `server.ts` la pide con `required(...)` | el proceso muere al arrancar |
-| `AMBIGUOUS_API_KEY` | lector real + `ambiguousExecutor` del boundary | no hay detección real ni escritura |
-| Auth0 (o `ALLOW_UNVERIFIED_WRITES=1`) | `verifyScope` antes de cada escritura | `executeApproved` se niega a escribir |
-| OpenAI / OpenRouter | el agente y el plano del fallback del video | no hay propuesta |
+### Estado REAL, verificado leyendo `.env` (nombres, no valores)
 
-**Ojo con `CHANNEL_CODE`:** tiene que ser idéntico carácter por carácter al
-Channel Code de Intelligence. Si no coincide, el Channel queda en
-"Waiting for runtime" y no da un error claro. Sale de `npm run channel:setup` —
-**lo puedo correr yo**, pero hay que coordinar con Ivan para no provisionar dos
-Channels distintos.
+**Ya están, no hay que pedirlas:** `CHANNEL_CODE`, `INTELLIGENCE_API_KEY`,
+`AMBIGUOUS_API_KEY`, `GOOGLE_API_KEY`.
+→ **`npm run dev:slack` se puede correr AHORA.**
+
+| Falta | Para qué | A quién |
+|---|---|---|
+| `OPENAI_API_KEY` **o** `OPENROUTER_API_KEY` (una sola alcanza) | **el plano del fallback del video** | Ivan (R4), prioridad 3 |
+| `AUTH0_DOMAIN` + `AUTH0_AUDIENCE` | que el boundary verifique scope de verdad | Rodrigo (R2) — hoy corre con `ALLOW_UNVERIFIED_WRITES=1` |
+
+### 🚨 El plano del fallback está ROTO (verificado, no supuesto)
+
+Con el `.env` actual, corriendo `withFallback` offline:
+
+```
+primary        : google
+fallback hop to: openai
+  configured openai      : false
+  configured openrouter  : false
+  configured google      : true
+```
+
+`FORCE_PROVIDER_FAILURE=1` tumba el primario, salta a **openai**, que **no tiene
+key**, y muere con `OPENAI_API_KEY is required`. El comentario del propio código
+lo anticipa: *"the resulting '<KEY> is required' is the honest explanation"*.
+
+**El video mostraría un crash, no una supervivencia** — y ese plano es
+obligatorio en el guion (1:20–1:32) y es la evidencia del criterio 3.
+
+Dos salidas:
+
+1. **Conseguir `OPENROUTER_API_KEY` u `OPENAI_API_KEY`.** El salto google → ese
+   provider funciona y el plano vuelve a ser real. **Ojo:** `FALLBACK_MODEL` está
+   en `gemini-2.5-flash`; si el fallback pasa a OpenAI/OpenRouter hay que poner un
+   id de ESE provider, o el salto le pide a OpenAI un modelo de Gemini.
+2. **No filmar el fallback ni reclamarlo.** Se pierde el punto del criterio 3.
+   `SUBMISSION.md` ya quedó redactado con la verdad por si queda así.
 
 ```bash
 npm run first-calls      # ¿cuántas de las 8 hay?

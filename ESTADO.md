@@ -3,7 +3,7 @@
 Una linea por rol. Se actualiza en cada gate (10:00, 11:30, 13:00, 15:00).
 Los coding agents leen este archivo antes de tocar nada.
 
-_Ultima actualizacion: 14:35._
+_Ultima actualizacion: 15:26._
 
 | Gate | Hora | Estado |
 |---|---|---|
@@ -14,8 +14,76 @@ _Ultima actualizacion: 14:35._
 | Entrega | 16:30 | pendiente |
 | **Freeze final (confirmado por David)** | **16:45** | ventana real de trabajo: 2h10 desde las 14:35 |
 
-**Verificacion (14:29):** `npm run verify` verde — typecheck limpio y 182 tests
-(agent-core 37, loop-core 47, channel 64, web 34), 0 fallas, sin red.
+**Verificacion (15:26):** `npm run verify` verde — typecheck limpio y **200 tests**
+(agent-core 37, loop-core 58, channel 71, web 34), 0 fallas, sin red.
+`main` = `origin/main` = `1ffb20a`: la superficie de R3 ya esta empujada.
+`.env` existe con 11 claves, pero **`INTELLIGENCE_API_KEY` y `CHANNEL_CODE` estan
+vacias**: Slack sigue bloqueado.
+
+---
+
+## 15:12 — PRIMERA CORRIDA EN VIVO. Dos bugs bloqueantes encontrados y corregidos.
+
+`.env` creado con Gemini (`MODEL_PROVIDER=google`, `gemini-2.5-flash`) y la key
+real de Ambiguous. OpenRouter quedo fuera: perdieron las keys en el evento.
+
+**Verde en vivo:**
+
+- **Gemini**: `GET /v1beta/models` -> HTTP 200, `gemini-2.5-flash` disponible.
+  `with-fallback.ts` ahora soporta `google` como provider de primera clase en
+  ambos lados del salto (antes solo openai/openrouter: con `MODEL_PROVIDER=google`
+  `primaryProvider()` devolvia "openai" y el loop entero se rompia). Y el
+  fallback elige el primer provider CON clave, porque un salto a uno sin clave
+  muere con un error de config que `isRetryable` no reintenta. 16 tests, los 6
+  originales de Franco intactos.
+- **Ambiguous**: `npm run silentops:detect -w loop-core` -> `detected: true`,
+  `matches: []`, 3 mensajes, 3 ordenes abiertas. **Gate 1 verificado de verdad.**
+- **Loop completo con LLM real**: `npm run silentops:dry-run -w loop-core`
+  (detector -> Gemini -> Proposal; se corta antes del boundary, no escribe nada).
+  4 acciones, bullets con fuente citando UUIDs reales de mensajes, las 3 OT
+  reasignadas a Bruno segun el roster.
+
+**Bug 1 — el reloj de la demo no llegaba a las tools del agente.** El detector
+aceptaba `now`, pero `shift_roster` usaba `new Date()`: a las 15:00 cae fuera de
+la guardia Noche y el lector tiraba "no hay guardia con roster activo"
+(`ok: false` en el log). El agente se quedaba sin roster y no sabia a quien
+reasignar. Nuevo `src/domain/clock.ts` (`silentopsNow`/`resolveAt`), usado por
+`domain/tools.ts`.
+
+**Bug 2 — con un LLM real la propuesta salia SIEMPRE vacia.** `propose_action`
+exigia `payload.tool` = "el nombre EXACTO de la tool del workspace", un dato que
+el modelo por diseño NO tiene (el lector solo conoce tools de lectura). Gemini
+mandaba `{document_name, content}` y `{assignee, order_id}`, y `toAction` las
+descartaba en silencio: `actions: 0`, propuesta vacia, card imposible.
+**Los 15 golden cases pasaban porque el mock hardcodea `"tool": "TODO_docs_create"`:
+daban confianza falsa sobre el camino mas importante del producto.**
+Correccion en tres partes:
+1. `propose-tool.ts` publica `WRITE_INTENTS` — las tres intenciones que ya usa
+   `ambiguous-writer.ts` en `origin/r2/backend` (`silentops.create-handover`,
+   `silentops.reassign-work-order`, `silentops.annotate-work-order`) — como
+   `enum` en el schema de `payload.tool`, con los args de cada una. No invente
+   nombres nuevos: son los de R2, asi el merge no pelea.
+2. `normalizeWrite()` en `agent/index.ts` acepta el payload aplanado y lo
+   clasifica contra esas tres intenciones (`order_id` -> `id`, `document_name`
+   -> `title`). Un `tool` declarado pasa tal cual: decidir si se puede ejecutar
+   es del boundary contra el catalogo vivo, no de esta capa.
+3. `handleEvent` logea el payload crudo de cada accion descartada. Ese silencio
+   era lo que hacia el bug invisible.
+
+`npm run verify`: **200 tests, 0 fallas.**
+
+**Nota para R1 (Franco):** toque `agent/propose-tool.ts`, `agent/index.ts`,
+`domain/tools.ts` y `model/with-fallback.ts`, que son tuyos. Los cuatro cambios
+estan arriba con su evidencia; ningun test tuyo se modifico, solo se agregaron.
+
+**Merge con `origin/r2/backend`:** `git merge-tree` dice que el UNICO conflicto
+es `README.md`. Todo lo demas automerge. Pero `server.ts` de R2 importa
+`silentops-channel.tsx` en vez de `channel.tsx`, asi que **despues del merge gana
+el cableado de R2** y `apps/channel/src/silentops.tsx` queda muerto. Eso esta
+bien: el de R2 tiene el patron de "armado" para la entrega proactiva (Channels no
+tiene API para publicar en un canal donde nadie te menciono) y el file-store
+durable. Lo que hay que preservar del lado R3 es `approval-card.tsx`, que es
+exactamente lo que el comentario de R2 pide.
 
 **Tema elegido:** **SilentOps — continuidad para operaciones criticas de cadena de frio.** Un detector determinista y auditable encuentra un handover tecnico ausente entre guardias; el agente prepara, con fuentes, el documento, las reasignaciones y el aviso en Slack para aprobacion humana. Especificacion: [`SILENTOPS.md`](./SILENTOPS.md) — dentro del repo publico, es la fuente de verdad. La copia interna en `../docs/silentops-facilities.md` queda como material de equipo y no se publica.
 

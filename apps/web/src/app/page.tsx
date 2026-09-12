@@ -73,6 +73,9 @@ export default function Landing() {
           <a className={styles.navLink} href="#pricing">
             Pricing
           </a>
+          <a className={styles.navLink} href="/console">
+            Control tower
+          </a>
           <a className={styles.buttonPrimarySm} href="#approval">
             See the card
           </a>
@@ -216,9 +219,11 @@ export default function Landing() {
                 It lives in the operations channel, not in another tab
               </h2>
               <p className={styles.sectionBody}>
-                There is no console to open and no account to create. SilentOps
-                posts the proposal in the same thread where the shift is already
-                coordinated, and the decision is recorded there.
+                You do not approve in a dashboard. SilentOps posts the proposal
+                in the same thread where the shift is already coordinated, and
+                the decision is recorded there. The{" "}
+                <a href="/console">control tower</a> is for reviewing what
+                happened — never for deciding it.
               </p>
             </div>
             <ApprovalStates />

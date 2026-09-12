@@ -128,14 +128,28 @@ approved by the technician leaving the floor.
   orders are read to build the proposal and written back on approval; the
   read-only adapter is the only module that knows the provider's tool names, so
   the model can never name a write tool.
-- **Auth0** — the M2M scope the write boundary verifies (`write:workspace`,
-  `send:channel`, `schedule:job`) before every action, with an idempotency key.
-- **OpenAI / OpenRouter** — the model, with a demonstrated cross-provider
-  fallback: `FORCE_PROVIDER_FAILURE=1` fails the primary and the same run
-  completes on the secondary.
+- **Auth0** — the scope gate in front of every write. `boundary/write.ts` calls
+  `verifyScope` for the action's scope (`write:workspace`, `send:channel`,
+  `schedule:job`) before dispatching, and pairs it with an idempotency key.
+  **No Auth0 tenant is wired in this build:** the submitted `.env` sets
+  `ALLOW_UNVERIFIED_WRITES=1`, the explicit bypass. The gate fails closed
+  without it — covered by the test *"sin Auth0 configurado y sin bypass
+  explicito, no escribe nada"* — but we do not claim a live tenant we did not
+  provision.
+- **Google Gemini** — the model actually running this build
+  (`MODEL_PROVIDER=google`, `MODEL=gemini-2.5-flash`). Every model call goes
+  through `withFallback`, which re-resolves against a second provider on a
+  retryable error.
+- **OpenAI / OpenRouter** — supported providers of that same fallback, and the
+  pairing its 10 hermetic tests exercise. **Neither key is present in the
+  submitted build**, so with one provider configured there is no second hop to
+  demonstrate: `FORCE_PROVIDER_FAILURE=1` fails the primary and then reports the
+  missing key rather than completing the run. The cross-provider path is
+  implemented and tested, not demonstrated live here.
 
 Sponsor count is not a judging criterion; each tool above carries a distinct,
-visible part of the one workflow.
+visible part of the one workflow. Where a sponsor's integration is implemented
+but not provisioned, we say so rather than implying it ran.
 
 **Scheduling — labelled accurately.** The detector is a deterministic scheduled
 job, and that schedule is the product's trigger. It runs today through

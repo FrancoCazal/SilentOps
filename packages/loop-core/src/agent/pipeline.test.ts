@@ -83,3 +83,76 @@ describe("handleEvent", () => {
     assert.deepEqual(proposal.actions, []);
   });
 });
+
+describe("payload aplanado (lo que hace un LLM real)", () => {
+  /**
+   * Verificado con Gemini contra el workspace real: el modelo manda
+   * `{ assignee, order_id }` en vez de `{ tool, args: { id, assignee } }`.
+   * Antes las cuatro acciones se descartaban en silencio y la propuesta salia
+   * vacia — o sea, el producto no funcionaba con un modelo de verdad.
+   */
+  async function proposalFrom(payload: Record<string, unknown>) {
+    return handleEvent(evt, {
+      runId: "test",
+      log: () => {},
+      model: scriptedModel([
+        {
+          toolCalls: [
+            {
+              name: "propose_action",
+              args: {
+                kind: "workspace.write",
+                summary: "accion",
+                payload,
+                risk: "medium",
+                rationale: "porque",
+              },
+            },
+          ],
+        },
+        { text: "listo" },
+      ]),
+    });
+  }
+
+  function argsOf(action: unknown): Record<string, unknown> {
+    return (action as { args: Record<string, unknown> }).args;
+  }
+
+  it("clasifica una reasignacion aplanada, incluido order_id", async () => {
+    const p = await proposalFrom({ order_id: "OT-241", assignee: "Bruno" });
+    assert.equal(p.actions.length, 1);
+    assert.equal(p.actions[0]!.kind, "workspace.write");
+    assert.equal(argsOf(p.actions[0]).id, "OT-241");
+    assert.equal(argsOf(p.actions[0]).assignee, "Bruno");
+  });
+
+  it("clasifica un handover aplanado con document_name y bullets", async () => {
+    const p = await proposalFrom({
+      document_name: "Handover Noche 2026-09-12",
+      bullets: [{ text: "OT-241 abierta", source: "m1" }],
+    });
+    assert.equal(p.actions.length, 1);
+    assert.equal(argsOf(p.actions[0]).title, "Handover Noche 2026-09-12");
+  });
+
+  it("clasifica una anotacion aplanada", async () => {
+    const p = await proposalFrom({ id: "OT-243", note: "queda para mantenimiento" });
+    assert.equal(p.actions.length, 1);
+    assert.equal(argsOf(p.actions[0]).note, "queda para mantenimiento");
+  });
+
+  it("respeta un tool declarado y no lo reinterpreta", async () => {
+    const p = await proposalFrom({
+      tool: "silentops.create-handover",
+      args: { title: "T", bullets: [] },
+    });
+    assert.equal(p.actions.length, 1);
+    assert.equal(argsOf(p.actions[0]).title, "T");
+  });
+
+  it("sigue descartando un payload que no clasifica como ninguna intencion", async () => {
+    const p = await proposalFrom({ algo: "irrelevante" });
+    assert.equal(p.actions.length, 0, "no se adivina una accion de la nada");
+  });
+});

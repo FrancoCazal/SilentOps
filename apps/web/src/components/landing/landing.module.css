@@ -349,6 +349,14 @@
   color: var(--text-muted);
   text-wrap: pretty;
 }
+.sectionBody a {
+  color: var(--info);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sectionBody a:hover {
+  color: #bae6fd;
+}
 
 /* -------------------------------------------------------------- steps ---- */
 .steps {
