@@ -52,6 +52,14 @@ auditable with `git diff 86f547d..HEAD`. From it we use, unmodified:
 Third-party libraries: `@copilotkit/runtime`, `@modelcontextprotocol/sdk`,
 `jose`, the AI SDK.
 
+`Console approval states mockup/` is **tool-generated design output, not product
+code**. We wrote the prompt and the copy; the HTML and its 1,911-line
+`support.js` runtime were emitted by an AI design tool. It ships nothing, is
+imported by nothing, and exists only as a visual reference for the approval
+card's three states while filming. The card that actually runs is
+`apps/channel/src/approval-card.tsx`. Reviewed for secrets: none — the only
+address in it is the synthetic placeholder `ana@hubfrionorte.com`.
+
 We modified seven inherited files, all for wiring only — no inherited logic was
 repurposed: `.gitignore`, `AGENTS.md`, this file, three `package.json` files
 (registering the `loop-core` workspace and its scripts), and `package-lock.json`.
@@ -75,9 +83,23 @@ The core interaction is net-new and has no counterpart in the starter kit:
 | Cross-provider fallback with a demo kill switch | `packages/loop-core/src/model/with-fallback.ts` |
 | Eval harness with a scripted model (runs the whole loop offline) and a 15-case golden set including three adversarial cases | `packages/loop-core/evals/` |
 
-Verifiable from a clean clone: `npm run verify` runs 47 tests in `loop-core`,
-including the 15 golden cases. `npm run silentops:detect -w loop-core` runs the
+Verifiable from a clean clone: `npm run verify` runs **200 offline tests**
+(agent-core 37, loop-core 58, channel 71, web 34) with no network and no
+credentials, including the 15 golden cases **against a scripted model**.
+`npm run silentops:detect -w loop-core` runs the
 detector against the live Ambiguous workspace, read-only.
+
+**The honest split between offline and live.** The 200 offline tests pass, and
+the detector and the full read path have run against the live Ambiguous
+workspace (`detected: true`, `matches: []`, 3 messages, 3 open work orders). The
+same 15 golden cases run against the live model (`EVAL_MOCK=0`, Gemini
+`gemini-2.5-flash`) currently pass **5 of 15**, and that work is in progress: the
+model does not yet emit the `channel.send` step, and two adversarial cases
+propose writes where the golden expects none. The structural invariant holds in
+every case — the model's only action tool is `propose_action` and nothing
+executes without human approval — but we do not claim the golden set passes with
+a live model. Offline green and live-model conformance are different claims and
+we report them separately.
 
 ## Title and description
 
@@ -172,16 +194,16 @@ Judges score each of the four official criteria from 1–5. This checklist helps
 | Usefulness & Agentic Experience | Identify the user and problem, show a meaningful action in the surface, and demonstrate clear feedback and appropriate user control. Explain what work the agent saves. |
 
 - [ ] We can point to visible evidence for every criterion
-- [ ] We distinguish live services, sample data, session-only state, and standalone recipes
-- [ ] Sponsor technologies contribute to the workflow; their count is not a judging criterion
+- [x] We distinguish live services, sample data, session-only state, and standalone recipes
+- [x] Sponsor technologies contribute to the workflow; their count is not a judging criterion
 
 ## Public repository
 
-- [ ] A new participant can run the quickstart from a clean clone
-- [ ] The README lists the credentials and separate processes required
-- [ ] `npm run verify` passes; optional recipe checks pass if used
-- [ ] `.env`, tokens, generated traces with sensitive data, and account secrets are excluded
-- [ ] Sample data, session-only state, and unimplemented integrations are clearly labeled
+- [x] A new participant can run the quickstart from a clean clone (`npm ci && npm run verify`)
+- [x] The README lists the credentials and separate processes required
+- [x] `npm run verify` passes (200 tests, 0 failures, no network)
+- [x] `.env`, tokens, generated traces with sensitive data, and account secrets are excluded
+- [x] Sample data, session-only state, and unimplemented integrations are clearly labeled
 
 ## Two-minute demo video
 

@@ -157,6 +157,27 @@
   font: 400 11px/1.3 var(--sans);
   color: var(--text-faint);
 }
+.signOut {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: var(--text-faint);
+  font: 500 10.5px/1 var(--sans);
+  padding: 7px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: none;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.signOut:hover:not(:disabled) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+.signOut:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
 /* -------------------------------------------------------------- main ---- */
 .main {
