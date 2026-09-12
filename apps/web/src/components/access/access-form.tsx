@@ -116,10 +116,19 @@ export function AccessForm({ configured }: { configured: boolean }) {
                     autoComplete="current-password"
                     placeholder="••••••••"
                     required
+                    disabled={!configured}
                     onChange={(event) => setCode(event.target.value)}
                   />
                 </label>
               </div>
+
+              {!configured && (
+                <p className={styles.notice} role="status">
+                  This app has no hub access code configured, so the control
+                  tower is locked. Set <code>CONSOLE_ACCESS_CODE</code> in the
+                  root <code>.env</code> and restart to open it.
+                </p>
+              )}
 
               {error && (
                 <p className={styles.error} role="alert">
@@ -130,7 +139,7 @@ export function AccessForm({ configured }: { configured: boolean }) {
               <button
                 className={styles.submit}
                 type="submit"
-                disabled={busy || code.length === 0}
+                disabled={busy || !configured || code.length === 0}
               >
                 {busy ? "Checking…" : "Sign in"}
               </button>

@@ -140,3 +140,128 @@ export const ledgerClose: Record<View, LedgerClose> = {
     title: "Handover already present in Documents · no agent action",
   },
 };
+
+/* ------------------------------------------------------------- history ---- */
+
+/**
+ * What the detector did at each past shift boundary.
+ *
+ * `outcome` is the whole point of the history view: "silent" rows are shifts
+ * where the handover already existed and the agent correctly did nothing. A
+ * history that only listed detections would hide the agent's restraint.
+ */
+export type HistoryOutcome = "approved" | "rejected" | "silent";
+
+export type HistoryEntry = {
+  id: string;
+  date: string;
+  shift: "Night" | "Morning";
+  outgoing: string;
+  incoming: string;
+  /** Result count the deterministic document search returned. */
+  searchResults: number;
+  outcome: HistoryOutcome;
+  /** What was written, or explicitly what was not. */
+  result: string;
+  decidedAt?: string;
+  decidedBy?: string;
+};
+
+export const history: readonly HistoryEntry[] = [
+  {
+    id: "2026-09-12-night",
+    date: "12 Sep 2026",
+    shift: "Night",
+    outgoing: "Ana",
+    incoming: "Bruno",
+    searchResults: 0,
+    outcome: "approved",
+    result: "Handover created · 3 work orders reassigned",
+    decidedAt: "05:47",
+    decidedBy: "Ana",
+  },
+  {
+    id: "2026-09-11-morning",
+    date: "11 Sep 2026",
+    shift: "Morning",
+    outgoing: "Bruno",
+    incoming: "Ana",
+    searchResults: 1,
+    outcome: "silent",
+    result: "Handover already present · no proposal",
+  },
+  {
+    id: "2026-09-11-night",
+    date: "11 Sep 2026",
+    shift: "Night",
+    outgoing: "Ana",
+    incoming: "Bruno",
+    searchResults: 0,
+    outcome: "rejected",
+    result: "Proposal rejected · nothing written",
+    decidedAt: "05:52",
+    decidedBy: "Ana",
+  },
+  {
+    id: "2026-09-10-morning",
+    date: "10 Sep 2026",
+    shift: "Morning",
+    outgoing: "Bruno",
+    incoming: "Ana",
+    searchResults: 1,
+    outcome: "silent",
+    result: "Handover already present · no proposal",
+  },
+  {
+    id: "2026-09-10-night",
+    date: "10 Sep 2026",
+    shift: "Night",
+    outgoing: "Ana",
+    incoming: "Bruno",
+    searchResults: 0,
+    outcome: "approved",
+    result: "Handover created · 1 work order reassigned",
+    decidedAt: "05:49",
+    decidedBy: "Ana",
+  },
+  {
+    id: "2026-09-09-morning",
+    date: "9 Sep 2026",
+    shift: "Morning",
+    outgoing: "Bruno",
+    incoming: "Ana",
+    searchResults: 1,
+    outcome: "silent",
+    result: "Handover already present · no proposal",
+  },
+] as const;
+
+/* ------------------------------------------------------------ settings ---- */
+
+/** Shift schedule the detector reads its boundaries from. */
+export const shifts = [
+  { name: "Night", window: "22:00 → 06:00", roster: "Ana → Bruno" },
+  { name: "Morning", window: "06:00 → 14:00", roster: "Bruno → Ana" },
+] as const;
+
+/** Detector parameters. Deterministic on purpose — no model involved. */
+export const detector = [
+  { label: "Runs at", value: "15 minutes before shift close (05:45 for 06:00)" },
+  { label: "Searches", value: "Documents" },
+  { label: "Expected record", value: "Handover <Shift> <YYYY-MM-DD>" },
+  { label: "On no match", value: "Emit InboundEvent carrying the absence evidence" },
+  { label: "On match", value: "Stay silent — no proposal, no message" },
+] as const;
+
+/**
+ * Guardrails, stated as the product states them. Read-only: these are not
+ * toggles. Anything switchable here would be a way to turn a safety property
+ * off from a browser.
+ */
+export const guardrails = [
+  "The model can only emit propose_action; it cannot write or send directly.",
+  "Every write passes the boundary, which checks an Auth0 scope and applies an idempotency key.",
+  "A request such as “close every work order” is marked high risk and never performed automatically.",
+  "An instruction embedded in a channel message or work-order description is data, never authority.",
+  "No clinical data, safety determination, machine control or physical-world command is in scope.",
+] as const;
