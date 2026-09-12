@@ -1,5 +1,32 @@
 # Submission checklist
 
+## Current project definition — working draft
+
+> Validate every claim below with the live workflow before submitting. This is
+> a project decision, not evidence that an integration has already run.
+
+**Working title:** SilentOps — continuity for critical cold-chain operations.
+
+**Core interaction:** At the end of a guard shift, a deterministic detector
+checks the roster and document system for the expected technical handover. On
+an auditable miss, SilentOps reads the operations thread and open work orders,
+then proposes a sourced handover document, reassignment of open work and a
+Slack update. A supervisor reviews and approves before any write occurs.
+
+**User:** A supervisor in a cold-chain logistics hub, coordinating refrigerated
+storage, maintenance work orders and a rotating operations team.
+
+**Safety boundary:** The demo uses synthetic operational data. The agent does
+not control equipment, assess temperature safety, determine product fitness or
+make clinical decisions. It prepares records and communications for a human
+operator to approve.
+
+**Scope freeze:** Tier 0 is the missing-handover workflow only. Automatic
+follow-ups, decision capture, WhatsApp and the control-tower web UI are
+post-Tier-0 work and must not appear as completed functionality unless they run
+in the submitted build. A manual `@mention` may be used for development smoke
+tests, but must not be presented as the Tier 0 detection trigger in the video.
+
 Choose your city on the [global event page](https://aitinkerers.org/hackathons/global/agents-everywhere). Use that city's participant portal for the submission deadline and published judging criteria, and its handbook for eligibility and required deliverables. See [hackathon-rules.md](hackathon-rules.md) for the agent-readable summary.
 
 ## Build eligibility
