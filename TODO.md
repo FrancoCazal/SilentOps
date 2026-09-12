@@ -1,57 +1,71 @@
 # TODO — R3 (David) · superficie SilentOps
 
-Lo que está construido, lo que falta, y **qué de eso está bloqueado por llaves
-que no tengo**. El principio de este archivo: nada de mi parte espera una
-credencial para poder verse o testearse.
+_Actualizado 15:40. Freeze final 16:45 → **65 minutos**._
 
-> Actualizado después de que Rodrigo (R2) landeara `src/silentops.tsx`: el wiring
-> ya **no** es un bloqueo. Lo único que falta para verlo en Slack son credenciales.
+Verificado en esta pasada: `npm run verify` → **exit 0**, 200 tests
+(agent-core 37, loop-core 58, channel 71, web 34), 0 fallas, sin red.
 
 ---
 
-## Estado
+## 🔴 LO ÚNICO QUE IMPORTA AHORA: el video no existe
 
-| Pieza | Estado | Bloqueado por |
+El jurado es **global y asincrónico**: no ve la demo en vivo. El video y el repo
+**son** el proyecto a efectos del puntaje. `ESTADO.md` fija el último momento
+razonable para empezar a filmar en **15:45**. Ya pasó la hora.
+
+Todo lo demás de esta lista vale menos que empezar a filmar.
+
+### Lo que SÍ se puede filmar ahora mismo, sin credenciales
+
+```bash
+npm run preview:card -w channel
+# → apps/channel/preview/*.json
+# → pegar en https://app.slack.com/block-kit-builder → screenshot
+```
+
+| Archivo | Plano | Sirve para |
 |---|---|---|
-| `apps/channel/src/approval-card.tsx` | ✅ hecho · typecheck + tests verdes | — |
-| `apps/channel/src/approval-card.test.tsx` | ✅ 19 tests offline, sin credenciales | — |
-| Preview en Block Kit (`npm run preview:card -w channel`) | ✅ hecho, sin credenciales | — |
-| Wiring detector → agente → card → boundary | ✅ **hecho por Rodrigo** (`silentops.tsx`, `channel.tsx:60`) | — |
-| La card posteada en un thread real de Slack | 🟡 **desbloqueado** — las keys están en `.env` | correrlo y verificarlo |
-| El click de Aprobar escribiendo de verdad en Ambiguous | 🟡 `AMBIGUOUS_API_KEY` está; Auth0 no (corre con bypass) | prueba end to end |
-| Plano del fallback del video | ⛔ **roto** — falta un 2º provider | `OPENAI_API_KEY` u `OPENROUTER_API_KEY` |
-| Video de 2 minutos | ⏳ en progreso | nada — se puede filmar con el preview |
-| Bloque SilentOps arriba del `README.md` | ✅ hecho · + cómo ver la card sin credenciales | — |
-| `SUBMISSION.md` (4 bloques) | ⏳ pendiente | nada |
-| Post en redes | ⏳ pendiente (preparar 15:00) | nada |
+| `01-pending.json` | card con evidencia de ausencia + propuesta | 0:30–1:20, el corazón del video |
+| `02-approved.json` | "✓ Aprobado por Ana · handover creado" | la aprobación como firma de salida |
+| `03-rejected.json` | "rechazada · nada se escribió" | control: se puede decir no |
+| `04-silent.json` | `→ 1 result` · "Sin acción" | el agente que **no** dispara |
 
-Verificado: `npm run typecheck -w channel` → exit 0 · `npm test -w channel` → **56 tests, 0 fail**.
+Más planos que no dependen de nada: el ledger con el hueco, el canal, el
+workspace de Ambiguous, `npm run silentops:detect -w loop-core` en la terminal
+(lectura real, `matches: []`), `npm run verify` en verde.
 
 ---
 
-## 1. Credenciales que necesito y no tengo
+## 🔴 Slack sigue bloqueado — y `.env` se vació otra vez
 
-**Dueño: Ivan (R4).** Su doc dice `.env  TUYO — coordinar las 8 credenciales`, y
-en su tabla de prioridades la fila 2 nombra explícitamente mi card:
+A las 15:26 `ESTADO.md` reportaba 11 claves con `INTELLIGENCE_API_KEY` y
+`CHANNEL_CODE` **vacías**. A las 15:34, leyendo `.env` (sólo nombres y si están
+seteadas, nunca valores), quedaban **tres**:
 
-> `| 2 | CHANNEL_CODE (Slack) | el adaptador de Rodrigo y la card de David |`
+```
+CONSOLE_ACCESS_CODE      set
+CONSOLE_SESSION_SECRET   set
+LOG_LEVEL                set
+```
 
-Ivan **coordina**, pero cada dueño de cuenta carga su bloque.
+Es decir: **desaparecieron también Gemini y Ambiguous**. Alguien reescribió el
+archivo. Consecuencia: `npm run dev:slack` no arranca y **los planos 0:30–1:20 no
+se pueden filmar en vivo**. Van con el preview de Block Kit.
 
-### Estado REAL, verificado leyendo `.env` (nombres, no valores)
+> Corrección de algo que dije antes: afirmé que las claves estaban y que
+> `dev:slack` corría. Era falso — había listado **nombres** de variables, no
+> valores. Estaban vacías.
 
-**Ya están, no hay que pedirlas:** `CHANNEL_CODE`, `INTELLIGENCE_API_KEY`,
-`AMBIGUOUS_API_KEY`, `GOOGLE_API_KEY`.
-→ **`npm run dev:slack` se puede correr AHORA.**
+**Antes de tocar nada más: preguntar en el canal quién reescribió `.env`.** Si
+alguien tiene las claves de Gemini/Ambiguous en su máquina, se recuperan en un
+minuto y el plano en vivo vuelve a la mesa.
 
-| Falta | Para qué | A quién |
-|---|---|---|
-| `OPENAI_API_KEY` **o** `OPENROUTER_API_KEY` (una sola alcanza) | **el plano del fallback del video** | Ivan (R4), prioridad 3 |
-| `AUTH0_DOMAIN` + `AUTH0_AUDIENCE` | que el boundary verifique scope de verdad | Rodrigo (R2) — hoy corre con `ALLOW_UNVERIFIED_WRITES=1` |
+---
 
-### 🚨 El plano del fallback está ROTO (verificado, no supuesto)
+## 🟡 El plano del fallback no se puede filmar
 
-Con el `.env` actual, corriendo `withFallback` offline:
+Sólo hay (había) `GOOGLE_API_KEY`. `withFallback` salta a **openai**, que no
+tiene clave, y muere con `OPENAI_API_KEY is required`. Verificado offline:
 
 ```
 primary        : google
@@ -61,161 +75,90 @@ fallback hop to: openai
   configured google      : true
 ```
 
-`FORCE_PROVIDER_FAILURE=1` tumba el primario, salta a **openai**, que **no tiene
-key**, y muere con `OPENAI_API_KEY is required`. El comentario del propio código
-lo anticipa: *"the resulting '<KEY> is required' is the honest explanation"*.
+`ESTADO.md` confirma que **perdieron las keys de OpenRouter en el evento**. Con
+una sola (`OPENROUTER_API_KEY` u `OPENAI_API_KEY`) el plano vuelve a ser real;
+ojo que entonces hay que cambiar `FALLBACK_MODEL`, que hoy es `gemini-2.5-flash`,
+por un id del provider nuevo.
 
-**El video mostraría un crash, no una supervivencia** — y ese plano es
-obligatorio en el guion (1:20–1:32) y es la evidencia del criterio 3.
-
-Dos salidas:
-
-1. **Conseguir `OPENROUTER_API_KEY` u `OPENAI_API_KEY`.** El salto google → ese
-   provider funciona y el plano vuelve a ser real. **Ojo:** `FALLBACK_MODEL` está
-   en `gemini-2.5-flash`; si el fallback pasa a OpenAI/OpenRouter hay que poner un
-   id de ESE provider, o el salto le pide a OpenAI un modelo de Gemini.
-2. **No filmar el fallback ni reclamarlo.** Se pierde el punto del criterio 3.
-   `SUBMISSION.md` ya quedó redactado con la verdad por si queda así.
-
-```bash
-npm run first-calls      # ¿cuántas de las 8 hay?
-npm run channel:status   # ¿el Channel está online?
-```
+Si no aparece: **no filmar el fallback y no reclamarlo.** `SUBMISSION.md` ya está
+redactado con la verdad.
 
 ---
 
-## 2. Wiring — ✅ ya está (no es mío, es de Rodrigo)
+## 🟡 Riesgo de merge: mi superficie puede desaparecer
 
-`src/silentops.tsx` es el seam donde se juntan las cuatro etapas, y
-`channel.tsx` lo dispara:
+El `server.ts` de `origin/r2/backend` importa `silentops-channel.tsx`, no
+`channel.tsx`. Después del merge **gana el cableado de R2** y
+`apps/channel/src/silentops.tsx` queda muerto. Eso está bien.
 
-```
-detectMissingHandover()  → la ausencia + su evidencia (determinista, sin LLM)
-handleEvent()            → el modelo, cuya única salida es propose_action
-handoverApprovalCard()   → MI CARD: evidencia primero, propuesta después
-executeApproved()        → el único camino de escritura, tras el click humano
-```
-
-Mi card recibe `onApprove: boundaryFor(thread, log)` → `executeApproved(...)`.
-La invariante se mantiene: la card no escribe nada por su cuenta.
-
-Bonus que aporta el seam y me sirve para el video:
-
-- **`SILENTOPS_DEMO_AT`** — replaya el borde de turno de 05:45 a cualquier hora.
-  Un valor inválido lanza error en vez de evaluar el instante equivocado.
-  ```bash
-  $env:SILENTOPS_DEMO_AT = '2026-09-12T05:45:00-03:00'
-  ```
-- **El caso silencioso ya está en el runtime**: si el detector no dispara,
-  `runHandover` postea "Sin acción" y no muestra ningún botón.
-
-### ✅ Trampa del video — ARREGLADA
-
-`channel.tsx` dispara el detector **por @mention**, y `SILENTOPS.md` es explícito:
-una mención manual replaya el detector **sólo como smoke test de desarrollo** y
-**no se puede presentar como la detección proactiva del producto**.
-
-**Arreglado.** El origen ahora viaja hasta la card: `channel.onMention` pasa
-`origin: "manual-replay"` y la card **se etiqueta sola**:
-
-```
-⚙︎ replay de desarrollo · disparado por mención, no por el borde de turno
-```
-
-Un frame filmado por accidente ya no puede confundirse con el disparo real. La
-etiqueta sale en la card, en el aviso silencioso y en el "Sin acción". Cubierto
-por 3 tests, incluido uno que verifica que el camino del detector **no** la lleva.
-
-**Igual, para el video:** filmar el disparo por cron / `SILENTOPS_DEMO_AT`, no por
-mención. La etiqueta es una red de seguridad, no un permiso.
-
-### ✅ Durabilidad / clicks viejos — DECIDIDO Y ARREGLADO DONDE IMPORTA
-
-Dos correcciones a lo que decía antes:
-
-1. **No falla en silencio.** Sin store durable, un click sobre una card posteada
-   antes de un reinicio degrada a **"action expired"** (`hitl-patterns.md`). Malo,
-   pero visible.
-2. **Había un bug real detrás, y era mío.** La card ignoraba
-   `proposal.expiresAt`. Una card vieja en el thread conserva los botones vivos, y
-   `executeApproved` **sólo mira el status, no la expiración**. `expireOverdue()`
-   existe en `approval/store.ts` pero muta la copia del store, no la que la card
-   capturó en su closure. Resultado: un click tardío **escribía igual**.
-
-**Decisión: no implementar store durable.** El skill lo dice explícito — *"for a
-demo or a short-lived prompt, in-memory is fine"*. El arreglo real exige convertir
-la card en componente registrado (`defineChannelComponent` + props serializables,
-o sea sacar `proposal`/`onApprove` del closure) más un `StateStore` propio, y eso
-es cirugía sobre el seam que Rodrigo acaba de dejar verde, a dos horas de la
-entrega. Mala relación riesgo/beneficio.
-
-**En cambio se cerró el agujero en la puerta de aprobación** (`approval-card.tsx`):
-
-- `isExpired(p, now)` — una `expiresAt` ilegible cuenta como vencida (fallar del
-  lado seguro).
-- `confirmApproval` devuelve `ApprovalOutcome` y **no llama al boundary** si la
-  ventana cerró o la propuesta ya fue decidida. Nada se escribe en una negativa.
-- `refusedNotice` lo dice en la card: *"Sin acción. La ventana de aprobación ya
-  venció. **No se escribió nada.**"*
-- La card muestra la ventana: `válida hasta 06:30`.
-- Doble click / doble decisión: se niega en vez de escribir dos veces.
-
-Cubierto por 8 tests nuevos.
-
-**Verificado que NO rompe el ensayo:** `buildProposal` (en `agent/index.ts`) sella
-`createdAt`/`expiresAt` con `new Date()` — reloj de pared, **no** el instante
-replayado. Con `SILENTOPS_DEMO_AT=05:45` la propuesta vence a *ahora + ttl*, así
-que se puede aprobar a las 14:30 sin problema. (Lo que sí vence es el fixture del
-preview, que nadie aprieta.)
-
-Queda vivo: si el proceso se reinicia entre postear y aprobar, el botón responde
-"action expired". Mitigación de hoy: **no reiniciar el proceso en ese intervalo**;
-si pasa, reposteá la card.
+**Lo que hay que preservar del lado R3 es `approval-card.tsx`.** Decírselo a
+Rodrigo *antes* de mergear, o la card sale del build sin que nadie lo note.
 
 ---
 
-## 3. Lo que puedo hacer sin una sola credencial
+## ✅ Hecho y verificado (superficie R3)
 
-```bash
-# ver la card exactamente como la renderiza Slack:
-npm run preview:card -w channel
-# → escribe apps/channel/preview/*.json
-# → pegar 01-pending.json en https://app.slack.com/block-kit-builder
-# → screenshot para el video
-
-npm test -w channel        # 56 tests, 0 fail
-npm run typecheck -w channel
-```
-
-Los cuatro estados del preview son los planos del video:
-
-| Archivo | Plano del video |
+| Pieza | Evidencia |
 |---|---|
-| `01-pending.json` | la card con evidencia de ausencia + propuesta (0:30–1:20) |
-| `02-approved.json` | la aprobación como firma de salida |
-| `03-rejected.json` | control: se puede rechazar y no se escribe nada |
-| `04-silent.json` | el agente que **no** dispara (handover ya existe) |
+| `approval-card.tsx` — evidencia antes de propuesta | `matches: []` se imprime como `⌕ searched Documents for "..." at 05:45 → 0 results` |
+| Bullet sin fuente | se marca `⚠ sin fuente`, no se maquilla |
+| `Aprobar` → `confirmApproval` → `onApprove` | única salida a escritura; `Rechazar` no escribe |
+| Puerta de expiración | `confirmApproval` **no llama al boundary** si venció o ya se decidió; `refusedNotice` dice "No se escribió nada" |
+| Replay etiquetado | una mención pasa `origin: "manual-replay"` y la card lo dice: no puede confundirse con detección proactiva |
+| Caso silencioso | `handoverPresentNotice()` — el agente callado cuando el handover existe |
+| Preview sin credenciales | `npm run preview:card -w channel`, 4 estados, Block Kit válido |
+| `README.md` | abre como SilentOps + cómo ver la card sin credenciales |
+| Tests | 71 en `channel`, 0 fallas |
+
+### `SUBMISSION.md` — tres afirmaciones falsas corregidas
+
+Cada una era comprobable por el jurado en 30 segundos:
+
+1. **"47 tests… incluyendo los 15 golden cases"** → falso. Ahora: **200 tests
+   offline**, los golden marcados como **modelo scripted**, y declarado que con
+   modelo real dan **5/15**, con las dos causas conocidas.
+2. **"OpenAI / OpenRouter — the model, with a demonstrated cross-provider
+   fallback"** → el build corre **Gemini** y no hay segundo provider. Ahora:
+   Gemini como el modelo real; el fallback como *implementado y testeado, no
+   demostrado en vivo*.
+3. **"Auth0 — verifica el scope before every action"** → no hay tenant y corre
+   `ALLOW_UNVERIFIED_WRITES=1`. Ahora se declara el bypass y que la puerta
+   **falla cerrada** sin él.
+
+Además: **`Console approval states mockup/` estaba sin declarar** — 5 archivos
+trackeados, 2.605 líneas, de las cuales `support.js` (1.911) es runtime de una
+herramienta ajena. Las reglas exigen separar heredado de construido. Ya está
+declarado como salida generada por herramienta de diseño, que no se importa ni se
+publica como producto. Revisado: sin secretos (sólo el placeholder sintético
+`ana@hubfrionorte.com`).
+
+También: `apps/channel/preview/` gitignoreado (salida generada).
 
 ---
 
-## 4. Pendientes míos sin bloqueo
+## Checklist que queda (en orden)
 
-- [x] Bloque SilentOps arriba del `README.md` (qué es, la frase de la
-      imposibilidad, links a `SILENTOPS.md` y `SUBMISSION.md`, y el preview de la
-      card sin credenciales). **Falta sólo pegar el link del video.**
-- [ ] `SUBMISSION.md`: los 4 bloques. La sección *inherited vs. built* la escribe
-      Franco (riesgo de elegibilidad por ser fork de un template).
-- [ ] Filmar: ledger con el hueco, búsqueda vacía, card, aprobación, fallback
-      (`FORCE_PROVIDER_FAILURE=1`), arquitectura, cierre.
-- [ ] Subtítulos (el canal está en castellano, la voz probablemente en inglés).
-- [ ] Revisar cada frame por secretos antes de subir.
-- [ ] Post en redes preparado **a las 15:00**, no a las 16:20.
+- [ ] **FILMAR.** Con el preview si Slack no vuelve. 15:45 ya pasó.
+- [ ] Preguntar en el canal por `.env` (Gemini + Ambiguous).
+- [ ] Avisar a Rodrigo: preservar `approval-card.tsx` en el merge.
+- [ ] Link del video en `README.md` y en `SUBMISSION.md`.
+- [ ] Post de redes (era para las 15:00).
+- [ ] Subtítulos (canal en castellano, voz en inglés).
+- [ ] Barrido de secretos frame por frame antes de subir.
+- [ ] Los checkboxes de video/post de `SUBMISSION.md` (los de repo ya están).
 
----
+## Las tres frases que no se improvisan
 
-## 5. Higiene
+1. *"A standalone chat cannot wake at the expected shift boundary, query for the
+   required record and preserve that chain of evidence."*
+2. *"The agent has no write access. Everything you just saw was approved by the
+   technician going off shift."*
+3. *"SilentOps never controls equipment or decides safety."*
 
-- `apps/channel/preview/` es salida generada — no hace falta commitearla.
-- Datos del preview: sintéticos. Sin personas reales, sin temperaturas, sin
-  afirmaciones de que un producto está apto.
-- Nunca commitear `.env`.
+## Riesgo abierto que no arreglé (a propósito)
+
+Los `onClick` se rutean **sólo en proceso**: si el runtime se reinicia entre
+postear la card y apretarla, el botón responde "action expired". El arreglo real
+(componente registrado + store durable) es cirugía sobre el seam de R2 a una hora
+de la entrega. Mitigación: **no reiniciar el proceso durante el ensayo**; si un
+botón no responde, reposteá la card.
