@@ -4,6 +4,7 @@ import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { bootstrapBoundary } from "./bootstrap";
+import { readTool, isWorkspaceReaderRegistered, resetWorkspaceReader, fixtureReader } from "../domain/workspace-reader";
 import { executeApproved } from "./write";
 import { registerOutbound } from "../channels/outbound";
 import * as proposals from "../approval/store";
@@ -66,6 +67,8 @@ describe("bootstrapBoundary", () => {
       workspaceExecutor: async (tool) => { writes.push(tool); return { ok: true }; },
     });
     assert.equal(report.workspace, "custom");
+    assert.equal(report.reader, "ambiguous");
+    assert.equal(isWorkspaceReaderRegistered(), true);
     assert.equal(report.auth0, "bypass");
     assert.equal(report.statePaths, undefined);
     assert.ok(entries.some((m) => m.startsWith("AUTH0 BYPASS")));
@@ -90,6 +93,19 @@ describe("bootstrapBoundary", () => {
     assert.equal(report.workspace, "unconfigured");
     assert.ok(entries.some((m) => m.includes("AMBIGUOUS_API_KEY ausente")));
     await assert.rejects(() => executeApproved(proposal(), { log: () => {} }), /AMBIGUOUS_API_KEY/);
+  });
+
+  it("acepta un lector inyectado y lo deja registrado para readTool", async () => {
+    resetWorkspaceReader();
+    const report = await bootstrapBoundary({
+      log: () => {},
+      persist: false,
+      workspaceExecutor: async () => ({}),
+      workspaceReader: fixtureReader({ "silentops.open-work-orders": { items: [{ id: "ot-1" }] } }),
+    });
+    assert.equal(report.reader, "custom");
+    assert.deepEqual(await readTool("silentops.open-work-orders"), { items: [{ id: "ot-1" }] });
+    await assert.rejects(() => readTool("silentops.current-shift"), /fixture faltante/);
   });
 
   it("sin Auth0 y sin bypass reporta blocked", async () => {

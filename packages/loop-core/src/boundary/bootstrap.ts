@@ -16,6 +16,8 @@ import { fileIdempotencyStore, defaultStatePaths } from "./file-store";
 import { isAuth0Configured } from "./auth0";
 import { enablePersistence, disablePersistence } from "../approval/store";
 import { inProcessScheduler } from "../jobs/followup";
+import { registerWorkspaceReader, type WorkspaceReader } from "../domain/workspace-reader";
+import { createAmbiguousWorkspaceReader } from "./ambiguous-reader";
 import type { Logger } from "../observability/log";
 
 export type BootstrapOptions = {
@@ -26,10 +28,16 @@ export type BootstrapOptions = {
   jobScheduler?: JobScheduler;
   /** false = todo en memoria. Por defecto true: .data/loop-core (LOOP_STATE_DIR). */
   persist?: boolean;
+  /**
+   * Puerto de LECTURA (contrato §6: R1 lo declara, R2 lo registra). Por defecto
+   * el lector real de Ambiguous; fixtureReader(...) para evals y ensayos.
+   */
+  workspaceReader?: WorkspaceReader;
 };
 
 export type BootstrapReport = {
   workspace: "ambiguous" | "custom" | "unconfigured";
+  reader: "ambiguous" | "custom";
   auth0: "configured" | "bypass" | "blocked";
   statePaths?: { idempotency: string; proposals: string };
 };
@@ -56,13 +64,18 @@ export async function bootstrapBoundary(opts: BootstrapOptions): Promise<Bootstr
   registerWorkspaceExecutor(opts.workspaceExecutor ?? ambiguousExecutor);
   registerJobScheduler(opts.jobScheduler ?? inProcessScheduler);
 
+  // Lectura: el detector y las tools de dominio leen por aca. Sin key, el
+  // lector real tira en el primer uso (nunca devuelve vacio: contrato §6).
+  const reader: BootstrapReport["reader"] = opts.workspaceReader ? "custom" : "ambiguous";
+  registerWorkspaceReader(opts.workspaceReader ?? createAmbiguousWorkspaceReader());
+
   const auth0: BootstrapReport["auth0"] = isAuth0Configured()
     ? "configured"
     : process.env.ALLOW_UNVERIFIED_WRITES === "1"
       ? "bypass"
       : "blocked";
 
-  const report: BootstrapReport = { workspace, auth0, statePaths };
+  const report: BootstrapReport = { workspace, reader, auth0, statePaths };
   opts.log("boundary bootstrapped", { ...report });
   if (workspace === "unconfigured") {
     opts.log("AMBIGUOUS_API_KEY ausente: toda workspace.write va a fallar de forma visible");
