@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import {
   EXPECTED_RECORD,
@@ -59,7 +60,7 @@ function SourceTag() {
   return <span className={styles.sourceTag}>↗ source</span>;
 }
 
-export function ConsoleView() {
+export function ConsoleView({ notice }: { notice?: ReactNode }) {
   const [view, setView] = useState<View>("pending");
   const current = views[view];
   const close = ledgerClose[view];
@@ -89,6 +90,7 @@ export function ConsoleView() {
   return (
     <ConsoleShell
       active="shift"
+      notice={notice}
       toolbar={
         <>
           <span className={styles.shiftPill}>Night shift</span>

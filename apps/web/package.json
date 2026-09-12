@@ -15,6 +15,7 @@
     "@copilotkit/runtime": "1.70.3",
     "@openai/agents": "^0.17.2",
     "agent-core": "*",
+    "loop-core": "*",
     "next": "^15.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

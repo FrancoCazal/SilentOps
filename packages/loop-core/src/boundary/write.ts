@@ -13,10 +13,20 @@ import { outbound } from "../channels/outbound";
 import { effectiveActions, type Proposal, type ProposedAction } from "../approval/types";
 import type { Logger } from "../observability/log";
 
+/**
+ * Un scope distinto por tipo de accion. Los nombres son los que existen de
+ * verdad en el tenant de Auth0 (API `silentops`), verificados con
+ * `npm run auth0:check -w loop-core`.
+ *
+ * Si algun dia se crean los permisos granulares (`write:workspace`,
+ * `send:channel`, `schedule:job`), alcanza con cambiar los valores de aca: el
+ * checker y el boundary leen los dos de esta misma constante, asi que no pueden
+ * quedar desalineados.
+ */
 export const SCOPE: Record<ProposedAction["kind"], string> = {
-  "workspace.write": "write:workspace",
-  "channel.send": "send:channel",
-  "job.schedule": "schedule:job",
+  "workspace.write": "write",
+  "channel.send": "send",
+  "job.schedule": "schedule",
 };
 
 export type WorkspaceExecutor = (tool: string, args: Record<string, unknown>) => Promise<unknown>;
