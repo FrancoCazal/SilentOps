@@ -10,7 +10,7 @@
  */
 import { registerWorkspaceExecutor, registerJobScheduler } from "./write";
 import type { WorkspaceExecutor, JobScheduler } from "./write";
-import { ambiguousExecutor } from "./workplace-mcp";
+import { createAmbiguousWorkspaceWriter } from "./ambiguous-writer";
 import { setIdempotencyStore, memoryStore } from "./idempotency";
 import { fileIdempotencyStore, defaultStatePaths } from "./file-store";
 import { isAuth0Configured } from "./auth0";
@@ -22,7 +22,11 @@ import type { Logger } from "../observability/log";
 
 export type BootstrapOptions = {
   log: Logger;
-  /** Por defecto ambiguousExecutor. Inyectable para tests y ensayos sin escribir. */
+  /**
+   * Por defecto el writer de Ambiguous (boundary/ambiguous-writer.ts): traduce
+   * intenciones silentops.* a create_document / update_task y valida cualquier
+   * tool real contra el catalogo. Inyectable para tests y ensayos sin escribir.
+   */
   workspaceExecutor?: WorkspaceExecutor;
   /** Por defecto inProcessScheduler (sin durabilidad; Trigger.dev es de R1). */
   jobScheduler?: JobScheduler;
@@ -59,9 +63,9 @@ export async function bootstrapBoundary(opts: BootstrapOptions): Promise<Bootstr
     : process.env.AMBIGUOUS_API_KEY?.trim()
       ? "ambiguous"
       : "unconfigured";
-  // Sin key, ambiguousExecutor tira un error claro al primer uso: falla
-  // visible, no escritura fantasma.
-  registerWorkspaceExecutor(opts.workspaceExecutor ?? ambiguousExecutor);
+  // Sin key, el writer tira un error claro al primer uso: falla visible, no
+  // escritura fantasma.
+  registerWorkspaceExecutor(opts.workspaceExecutor ?? createAmbiguousWorkspaceWriter({ log: opts.log }));
   registerJobScheduler(opts.jobScheduler ?? inProcessScheduler);
 
   // Lectura: el detector y las tools de dominio leen por aca. Sin key, el

@@ -92,7 +92,11 @@ describe("bootstrapBoundary", () => {
     const report = await bootstrapBoundary({ log: (m) => { entries.push(m); }, persist: false });
     assert.equal(report.workspace, "unconfigured");
     assert.ok(entries.some((m) => m.includes("AMBIGUOUS_API_KEY ausente")));
-    await assert.rejects(() => executeApproved(proposal(), { log: () => {} }), /AMBIGUOUS_API_KEY/);
+    // Una tool ficticia rebota antes por la lista blanca del writer; una real
+    // llega al catalogo y ahi falta la key. Las dos son fallas visibles.
+    await assert.rejects(() => executeApproved(proposal(), { log: () => {} }), /lista blanca/);
+    const real = { ...proposal(), id: "pb2", actions: [{ kind: "workspace.write" as const, tool: "create_document", args: { type: "doc", title: "x" }, summary: "x" }] };
+    await assert.rejects(() => executeApproved(real, { log: () => {} }), /AMBIGUOUS_API_KEY/);
   });
 
   it("acepta un lector inyectado y lo deja registrado para readTool", async () => {

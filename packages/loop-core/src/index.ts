@@ -36,3 +36,5 @@ export { fileIdempotencyStore, fileProposalStore, defaultStatePaths } from "./bo
 export { approveAndExecute, rejectProposal, HighRiskError, NotApprovedError } from "./boundary/write";
 export { bootstrapBoundary } from "./boundary/bootstrap";
 export type { BootstrapOptions, BootstrapReport } from "./boundary/bootstrap";
+export { createAmbiguousWorkspaceWriter, renderHandover, WriteNotAllowedError, WRITE_INTENTS, WRITE_ALIASES, PASS_THROUGH_ALLOWLIST } from "./boundary/ambiguous-writer";
+export type { WriterOptions, HandoverBullet } from "./boundary/ambiguous-writer";
