@@ -263,7 +263,16 @@ try {
   if (mock) proposal = mockProposal(evt, now);
   else {
     // Con el vocabulario de escritura: sin el, el modelo manda payloads sin tool (fixes F-18).
-    try { proposal = await handleEvent(evt, { log, prompt: withWriteVocabulary(systemPrompt()) }); }
+    // Gemini a veces devuelve una respuesta vacia (0 texto, 0 tool calls) con
+    // el evento real; un reintento la resuelve casi siempre. Igual que el canal.
+    const prompt = withWriteVocabulary(systemPrompt());
+    try {
+      proposal = await handleEvent(evt, { log, prompt });
+      if (proposal.actions.length === 0) {
+        console.log("el modelo no propuso acciones; reintentando una vez");
+        proposal = await handleEvent(evt, { log, prompt });
+      }
+    }
     catch (error) { exitCode = 3; throw error; }
   }
   const evidence = record(evt.context?.absenceEvidence);
