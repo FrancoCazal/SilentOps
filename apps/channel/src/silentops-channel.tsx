@@ -56,6 +56,11 @@ import type { InboundEvent, Proposal, ExecutionResult } from "loop-core";
 import { makeChannelAgent } from "./agent";
 import { required } from "./env";
 import { toInboundEvent } from "./inbound-slack";
+// La card definitiva es de R3 (David): funcion pura con onApprove/onReject.
+// Este archivo solo decide QUE pasa al aprobar: approveAndExecute, nada mas.
+import { handoverApprovalCard, handoverPresentNotice } from "./approval-card";
+import type { RunOrigin } from "./approval-card";
+import { readHandoverContext, bulletsFromProposal, ordersFromProposal } from "./silentops";
 import { parseCommand, demoNow, liveProposalFor, absenceSentence } from "./silentops-logic";
 
 const log = loggerFor("slack");
@@ -178,11 +183,15 @@ export async function runDetectorOnce(
     }
     return undefined;
   }
-  return runLoop(evt, thread);
+  return runLoop(evt, thread, opts.reason === "mention" ? "manual-replay" : "detector");
 }
 
 /** InboundEvent -> Proposal -> card. Idempotente por evento: una propuesta viva bloquea otra. */
-export async function runLoop(evt: InboundEvent, thread: SlackThread): Promise<Proposal | undefined> {
+export async function runLoop(
+  evt: InboundEvent,
+  thread: SlackThread,
+  origin: RunOrigin = "detector",
+): Promise<Proposal | undefined> {
   const live = liveProposalFor(evt.id, proposals.list());
   if (live) {
     log("event already has a live proposal", { eventId: evt.id, proposalId: live.id, status: live.status });
@@ -200,8 +209,41 @@ export async function runLoop(evt: InboundEvent, thread: SlackThread): Promise<P
   }
   proposals.save(proposal);
   proposalThreads.set(proposal.id, thread);
-  await thread.post(proposalCard(proposal, evt));
-  log("proposal posted", { proposalId: proposal.id, actions: proposal.actions.length, risk: proposal.risk });
+  const ctx = readHandoverContext(evt);
+  await thread.post(
+    handoverApprovalCard({
+      proposal,
+      absence: ctx.absence,
+      header: ctx.header,
+      origin,
+      evidence: bulletsFromProposal(proposal.actions, ctx),
+      reassignedOrders: ordersFromProposal(proposal.actions, ctx),
+      // Aprobar: la card ya valido pending/expirada y sabe quien aprobo. Aca
+      // entra el UNICO camino de escritura. Riesgo alto: approveAndExecute
+      // tira HighRiskError, la card lo muestra como no ejecutado y se publica
+      // la confirmacion explicita de segundo click.
+      onApprove: async (approved) => {
+        const by = approved.approvedBy ?? "supervisor";
+        executing = proposals.get(proposal.id);
+        try {
+          const results = await approveAndExecute(proposal.id, by, { log });
+          await thread.post(resultCard(proposals.get(proposal.id) ?? proposal, by, results));
+        } catch (e) {
+          if (e instanceof HighRiskError) {
+            await thread.post(highRiskCard(proposal, by));
+            throw new Error("riesgo alto: requiere confirmacion explicita en la card de abajo; nada se ejecuto");
+          }
+          throw e;
+        } finally {
+          executing = undefined;
+        }
+      },
+      onReject: async (rejected) => {
+        rejectProposal(proposal.id, rejected.approvedBy ?? "supervisor");
+      },
+    }),
+  );
+  log("proposal posted", { proposalId: proposal.id, actions: proposal.actions.length, risk: proposal.risk, origin });
   return proposal;
 }
 
@@ -225,37 +267,21 @@ export function startDetectorLoop(opts: { everyMs?: number } = {}): () => void {
   return () => clearInterval(timer);
 }
 
-// ───────────────────────── card provisoria (R3 la reemplaza) ─────────────────────────
+// ───────────────────────── cards propias: resultado, riesgo alto, estado, error ─────────────────────────
 
-function proposalCard(p: Proposal, evt: InboundEvent, extra?: { note?: string }) {
-  const evidence = absenceSentence(evt);
-  const lines = effectiveActions(p).map(
-    (a, i) => `${i + 1}. **${a.summary}** · \`${a.kind}\`${a.kind === "workspace.write" ? ` · tool \`${a.tool}\`` : ""}`,
-  );
-  const shift = evt.context?.shift as { name?: string; outgoing?: string[]; incoming?: string[] } | undefined;
+function highRiskCard(p: Proposal, by: string) {
   return (
-    <Message accent={p.risk === "high" ? "#E01E5A" : p.risk === "medium" ? "#ECB22E" : "#2EB67D"}>
-      <Header>{`Handover ausente${shift?.name ? ` · turno ${shift.name}` : ""}`}</Header>
-      {evidence ? (
-        <Section>
-          <Markdown>{`Evidencia del detector: \`${evidence}\``}</Markdown>
-        </Section>
-      ) : null}
-      {shift?.outgoing?.length ? (
-        <Context>{`Sale: ${shift.outgoing.join(", ")}${shift.incoming?.length ? ` · Entra: ${shift.incoming.join(", ")}` : ""}`}</Context>
-      ) : null}
-      <Divider />
+    <Message accent="#E01E5A">
+      <Header>Riesgo alto: confirmacion explicita</Header>
       <Section>
-        <Markdown>{lines.length ? lines.join("\n") : "_El agente no propuso acciones: sin actividad con fuente, no se inventa trabajo._"}</Markdown>
+        <Markdown>{`${by}, esta propuesta es de riesgo **alto** y no se ejecuta con un solo click. Confirmá para ejecutar o rechazá.`}</Markdown>
       </Section>
-      <Context>{`Por que: ${p.rationale} · riesgo ${p.risk} · vence ${p.expiresAt}`}</Context>
-      {extra?.note ? <Context>{extra.note}</Context> : null}
-      <Context>{`proposal:${p.id} · run ${p.runId} · evento ${p.sourceEventId}`}</Context>
+      <Context>{`proposal:${p.id}`}</Context>
       <Actions>
-        <Button value="approve" style="primary" onClick={(ctx) => decide(ctx, p.id, "approve")}>
-          Aprobar
+        <Button value="confirm-high" style="danger" onClick={(c) => decide(c, p.id, "confirm-high")}>
+          Confirmar riesgo alto
         </Button>
-        <Button value="reject" style="danger" onClick={(ctx) => decide(ctx, p.id, "reject")}>
+        <Button value="reject" onClick={(c) => decide(c, p.id, "reject")}>
           Rechazar
         </Button>
       </Actions>
@@ -352,24 +378,7 @@ async function decide(
     await thread.update(ref, resultCard(proposals.get(proposalId) ?? p!, by, results));
   } catch (e) {
     if (e instanceof HighRiskError && p) {
-      await thread.update(
-        ref,
-        <Message accent="#E01E5A">
-          <Header>Riesgo alto: confirmacion explicita</Header>
-          <Section>
-            <Markdown>{`${by}, esta propuesta es de riesgo **alto** y no se ejecuta con un solo click. Confirmá para ejecutar o rechazá.`}</Markdown>
-          </Section>
-          <Context>{`proposal:${p.id}`}</Context>
-          <Actions>
-            <Button value="confirm-high" style="danger" onClick={(c) => decide(c, p.id, "confirm-high")}>
-              Confirmar riesgo alto
-            </Button>
-            <Button value="reject" onClick={(c) => decide(c, p.id, "reject")}>
-              Rechazar
-            </Button>
-          </Actions>
-        </Message>,
-      );
+      await thread.update(ref, highRiskCard(p, by));
       return;
     }
     const title = e instanceof NotApprovedError ? "La propuesta ya no se puede aprobar" : "La ejecucion fallo";
