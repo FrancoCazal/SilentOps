@@ -11,7 +11,14 @@ import { resolveModel } from "agent-core";
 import type { Logger } from "../observability/log";
 
 export type ModelRef = ReturnType<typeof resolveModel>;
-export type ProviderName = "openai" | "openrouter";
+export type ProviderName = "openai" | "openrouter" | "google" | "anthropic";
+const PROVIDERS: readonly ProviderName[] = ["openai", "openrouter", "google", "anthropic"];
+
+function canonical(raw: string | undefined): ProviderName | undefined {
+  const v = (raw ?? "").trim().toLowerCase();
+  const name = v === "gemini" || v === "google-gemini" ? "google" : v;
+  return (PROVIDERS as readonly string[]).includes(name) ? (name as ProviderName) : undefined;
+}
 
 export type Attempt = {
   provider: ProviderName;
@@ -51,12 +58,17 @@ function restore(key: string, value: string | undefined): void {
 }
 
 export function primaryProvider(): ProviderName {
-  return (process.env.MODEL_PROVIDER || "openai").toLowerCase() === "openrouter"
-    ? "openrouter"
-    : "openai";
+  return canonical(process.env.MODEL_PROVIDER) ?? "openai";
 }
 
+/**
+ * FALLBACK_PROVIDER manda si esta y es valido. Puede ser el mismo provider con
+ * otro FALLBACK_MODEL (fallback de modelo, no de vendor). Sin la variable, el
+ * par historico: openai <-> openrouter; google y anthropic caen a openai.
+ */
 export function fallbackProvider(): ProviderName {
+  const explicit = canonical(process.env.FALLBACK_PROVIDER);
+  if (explicit) return explicit;
   return primaryProvider() === "openai" ? "openrouter" : "openai";
 }
 
@@ -101,6 +113,9 @@ export async function withFallback<T>(
 }
 
 function defaultFallbackModel(provider: ProviderName): string | undefined {
-  // OpenRouter necesita slug publisher/model; OpenAI se queda con MODEL.
-  return provider === "openrouter" ? "openai/gpt-4.1" : undefined;
+  // OpenRouter necesita slug publisher/model; Google un id de Gemini sin
+  // prefijo; OpenAI y Anthropic se quedan con MODEL (o con FALLBACK_MODEL).
+  if (provider === "openrouter") return "openai/gpt-4.1";
+  if (provider === "google") return "gemini-2.5-flash";
+  return undefined;
 }
