@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ApprovalStates } from "@/components/landing/approval-states";
 import styles from "@/components/landing/landing.module.css";
 
@@ -56,10 +57,10 @@ export default function Landing() {
   return (
     <div className={styles.page}>
       <header className={styles.nav}>
-        <div className={styles.brand}>
+        <Link href="/" className={styles.brand} aria-label="SilentOps home">
           <span className={styles.brandDot} aria-hidden="true" />
           <span className={styles.brandName}>SilentOps</span>
-        </div>
+        </Link>
         <nav className={styles.navLinks} aria-label="Main navigation">
           <a className={styles.navLink} href="#how">
             How it works
@@ -73,7 +74,7 @@ export default function Landing() {
           <a className={styles.navLink} href="#pricing">
             Pricing
           </a>
-          <a className={styles.navLink} href="/console">
+          <a className={styles.navLinkStrong} href="/console">
             Control tower
           </a>
           <a className={styles.buttonPrimarySm} href="#approval">
@@ -262,7 +263,12 @@ export default function Landing() {
       </main>
 
       <footer className={styles.footer}>
-        <span className={styles.footerCopy}>© 2026 SilentOps</span>
+        <span className={styles.footerCopy}>
+          © 2026 SilentOps ·{" "}
+          <a className={styles.footerLink} href="/console">
+            Control tower
+          </a>
+        </span>
         <span className={styles.footerNote}>
           SilentOps never controls equipment or decides safety. It prepares a
           sourced handover for the responsible human to approve.

@@ -4,10 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FACILITY } from "@/components/handover/handover-data";
-import styles from "@/components/access/access.module.css";
+import styles from "./access.module.css";
 
 /**
- * Access page for the control tower.
+ * Access form for the control tower.
+ *
+ * `configured` is resolved on the server by `app/access/page.tsx`, so an
+ * operator learns the gate has no code BEFORE typing one, instead of guessing
+ * at a rejection. It reveals only that configuration is missing — never the
+ * code, and never whether a given code was close.
  *
  * TWO DELIBERATE DEPARTURES FROM THE MOCKUP, both about not lying to the user:
  *
@@ -28,7 +33,7 @@ import styles from "@/components/access/access.module.css";
 
 type Mode = "signin" | "request";
 
-export default function AccessPage() {
+export function AccessForm({ configured }: { configured: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signin");
   const [code, setCode] = useState("");

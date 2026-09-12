@@ -800,6 +800,14 @@
   font: 400 11.5px/1 var(--sans);
   color: var(--text-ghost);
 }
+.footerLink {
+  color: var(--text-faint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.footerLink:hover {
+  color: var(--text);
+}
 .footerNote {
   font: 400 11px/1.5 var(--mono);
   color: var(--text-faint);
