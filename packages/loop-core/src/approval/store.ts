@@ -14,6 +14,11 @@ function persist(next = proposals): void {
  * El archivo existente es autoritativo. Si todavia no existe, conserva y
  * vuelca las propuestas que pudieron crearse durante el arranque.
  */
+/** Vuelve a memoria pura. Lo usan tests y bootstrapBoundary({ persist: false }). */
+export function disablePersistence(): void {
+  persistence = undefined;
+}
+
 export async function enablePersistence(path: string): Promise<void> {
   const nextPersistence = fileProposalStore(path);
   if (existsSync(path)) {

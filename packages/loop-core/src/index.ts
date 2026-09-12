@@ -24,3 +24,5 @@ export { inProcessScheduler, dueJobs, pendingJobs } from "./jobs/followup";
 export { readTool, setWorkplaceClientForTests } from "./boundary/workplace-mcp";
 export { fileIdempotencyStore, fileProposalStore, defaultStatePaths } from "./boundary/file-store";
 export { approveAndExecute, rejectProposal, HighRiskError, NotApprovedError } from "./boundary/write";
+export { bootstrapBoundary } from "./boundary/bootstrap";
+export type { BootstrapOptions, BootstrapReport } from "./boundary/bootstrap";
