@@ -171,34 +171,59 @@ fake y seguí — no esperes a nadie.
 
 ---
 
-## 6. El hueco que falta cerrar (mini-gate)
+## 6. El puerto de lectura — RESUELTO
 
-**El camino de LECTURA por MCP no está en los contratos.** Hoy `workplace-mcp.ts`
-exporta `ambiguousExecutor` (escritura) y `listWorkplaceTools` (listado), pero
-los handlers de `domain/tools.ts` necesitan **leer** el workspace: el roster del
-turno, la búsqueda de documentos, las órdenes abiertas.
+**El camino de LECTURA por MCP no estaba en los contratos.** `workplace-mcp.ts`
+expone `ambiguousExecutor` (escritura) y `listWorkplaceTools` (listado), pero el
+detector y los handlers de `domain/tools.ts` necesitan **leer**: roster del turno,
+búsqueda de documentos, historial del canal, órdenes abiertas.
 
-Sin esto, R1 no puede escribir un handler real y R2 no sabe qué exponer. Es el
-cruce más probable de colisión a media tarde.
+Se resolvió sin esperar a nadie: **R1 declara el puerto, R2 registra la
+implementación.** Mismo patrón que `registerWorkspaceExecutor` en
+`boundary/write.ts`, así que no se tocó ningún archivo congelado.
 
-**Propuesta a acordar entre R1 y R2 en el próximo mini-gate** (R2 la implementa,
-R1 la consume):
+Vive en `packages/loop-core/src/domain/workspace-reader.ts` (dueño R1):
 
 ```ts
-// boundary/workplace-mcp.ts — dueño R2
-export async function readTool(
-  tool: string,                        // nombre exacto de ambiguous-tools.md
-  args: Record<string, unknown>,
-): Promise<unknown>;
+export type WorkspaceReader = (tool: string, args?: Record<string, unknown>) => Promise<unknown>;
+
+registerWorkspaceReader(fn)      // R2 llama esto al arrancar el proceso
+readTool(tool, args)             // lo que consumen el detector y las tools
+fixtureReader(fixtures)          // para evals y desarrollo
+isWorkspaceReaderRegistered()
 ```
 
-Reglas de esa función: solo tools de lectura, sin scope de escritura, y si el
-MCP no está configurado tira un error claro en vez de devolver vacío — un
-resultado vacío falso rompería la evidencia de ausencia, que es el corazón del
-producto.
+### Implementación real
 
-Hasta que exista, R1 escribe los handlers contra un fake local y marca
-`TODO(readTool)`.
+```ts
+import { createAmbiguousWorkspaceReader } from "./boundary/ambiguous-reader";
+import { registerWorkspaceReader } from "./domain/workspace-reader";
+
+// Al arrancar el proceso que ejecuta el detector:
+registerWorkspaceReader(createAmbiguousWorkspaceReader());
+```
+
+`boundary/ambiguous-reader.ts` ya implementa el adaptador y usa solo seis tools
+MCP de lectura. Su mapeo y el comando de prueba están en
+[`ambiguous-tools.md`](./ambiguous-tools.md). Sin scope de escritura y sin
+idempotencia: es lectura.
+
+### La regla que no se puede romper
+
+**`readTool` TIRA si no hay lector registrado, y `fixtureReader` tira si falta un
+fixture.** Es deliberado. Devolver vacío sería peor que fallar: el detector leería
+ese vacío como "el handover no existe" e inventaría una ausencia. Siendo la
+ausencia la evidencia central del producto, un falso vacío no es un bug menor —
+es el producto mintiendo.
+
+Si implementás el lector MCP y no hay credenciales, fallá ruidosamente. Nunca
+devuelvas `[]`.
+
+### Los nombres de las tools
+
+Viven en **un solo lugar**: la constante `TOOLS` de
+`packages/loop-core/src/domain/tools.ts`, hoy con placeholders `TODO_`. Cuando
+R4 publique `ambiguous-tools.md`, es reemplazar cuatro strings.
 
 ---
 

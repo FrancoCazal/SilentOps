@@ -23,12 +23,13 @@ export async function workplaceClient(): Promise<Client> {
   const next = new Client({ name: "loop-core", version: "0.1.0" });
   await next.connect(
     new StreamableHTTPClientTransport(new URL(AMBIGUOUS_MCP_URL), {
-      fetch: (url: string | URL | Request, init?: RequestInit) =>
-        fetch(url, {
-          ...init,
-          headers: { ...init?.headers, Authorization: `Bearer ${apiKey}` },
-        }),
-    } as never),
+      // Keep the SDK's HTTP negotiation intact. In particular, wrapping fetch
+      // here can discard the content type it sets for Streamable HTTP MCP.
+      // This matches the working server-side Ambiguous client in apps/web.
+      requestInit: {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      },
+    }),
     { timeout: 20_000 },
   );
   client = next;
