@@ -38,3 +38,4 @@ export { bootstrapBoundary } from "./boundary/bootstrap";
 export type { BootstrapOptions, BootstrapReport } from "./boundary/bootstrap";
 export { createAmbiguousWorkspaceWriter, renderHandover, WriteNotAllowedError, WRITE_INTENTS, WRITE_ALIASES, PASS_THROUGH_ALLOWLIST } from "./boundary/ambiguous-writer";
 export type { WriterOptions, HandoverBullet } from "./boundary/ambiguous-writer";
+export { WRITE_VOCABULARY_PROMPT, withWriteVocabulary } from "./boundary/write-vocabulary";

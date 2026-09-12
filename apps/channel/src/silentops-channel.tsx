@@ -49,6 +49,8 @@ import {
   loggerFor,
   HighRiskError,
   NotApprovedError,
+  systemPrompt,
+  withWriteVocabulary,
 } from "loop-core";
 import type { InboundEvent, Proposal, ExecutionResult } from "loop-core";
 import { makeChannelAgent } from "./agent";
@@ -188,7 +190,9 @@ export async function runLoop(evt: InboundEvent, thread: SlackThread): Promise<P
   }
   let proposal: Proposal;
   try {
-    proposal = await handleEvent(evt, { log });
+    // El prompt de dominio + el vocabulario de escritura del boundary: sin
+    // esto el modelo manda payloads sin `tool` y la propuesta sale vacia.
+    proposal = await handleEvent(evt, { log, prompt: withWriteVocabulary(systemPrompt()) });
   } catch (e) {
     log("handleEvent failed", { eventId: evt.id, error: String(e) });
     await thread.post(errorCard("El agente no pudo preparar la propuesta", e));
