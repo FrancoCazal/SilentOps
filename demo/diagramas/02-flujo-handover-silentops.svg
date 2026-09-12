@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img"><title>From a missing handover to human approval</title><desc>Demo example: at 05:45, the shift ends at 06:00 and the handover document is missing.</desc>
+<rect width="1920" height="1080" fill="#091521"/>
+<text x="70" y="46" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">SILENTOPS  /  CONTINUITY BETWEEN SHIFTS</text>
+<text x="70" y="80" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="48" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">From a missing handover to human approval</text>
+<text x="70" y="148" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Demo example: at 05:45, the shift ends at 06:00 and the handover document is missing.</text>
+<polyline points="306,437 333,437" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="333.0,437.0 322.0,432.0 322.0,442.0" fill="#68e5b2"/>
+<polyline points="570,437 592,437" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="592.0,437.0 581.0,432.0 581.0,442.0" fill="#68e5b2"/>
+<polyline points="806,437 833,437" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="833.0,437.0 822.0,432.0 822.0,442.0" fill="#68e5b2"/>
+<polyline points="1084,437 1109,437" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1109.0,437.0 1098.0,432.0 1098.0,442.0" fill="#68e5b2"/>
+<polyline points="1348,437 1373,437" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1373.0,437.0 1362.0,432.0 1362.0,442.0" fill="#68e5b2"/>
+<polyline points="1608,437 1632,437" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1632.0,437.0 1621.0,432.0 1621.0,442.0" fill="#68e5b2"/>
+<polyline points="699,340 699,300" fill="none" stroke="#7dc7f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="699.0,300.0 694.0,311.0 704.0,311.0" fill="#7dc7f7"/>
+<polyline points="1229,340 1229,300" fill="none" stroke="#f7ce83" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1229.0,300.0 1224.0,311.0 1234.0,311.0" fill="#f7ce83"/>
+<polyline points="1490,340 1490,300" fill="none" stroke="#f7ce83" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1490.0,300.0 1485.0,311.0 1495.0,311.0" fill="#f7ce83"/>
+<polyline points="451,534 451,641" fill="none" stroke="#7dc7f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="451.0,641.0 456.0,630.0 446.0,630.0" fill="#7dc7f7"/>
+<polygon points="451.0,534.0 446.0,545.0 456.0,545.0" fill="#7dc7f7"/>
+<polyline points="958,534 958,641" fill="none" stroke="#c3b0fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="958.0,641.0 963.0,630.0 953.0,630.0" fill="#c3b0fc"/>
+<polygon points="958.0,534.0 953.0,545.0 963.0,545.0" fill="#c3b0fc"/>
+<polyline points="1280,534 1280,599 1400,599 1400,641" fill="none" stroke="#708fa6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1400.0,641.0 1405.0,630.0 1395.0,630.0" fill="#708fa6"/>
+<polyline points="1530,534 1530,641" fill="none" stroke="#708fa6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1530.0,641.0 1535.0,630.0 1525.0,630.0" fill="#708fa6"/>
+<polygon points="1530.0,534.0 1525.0,545.0 1535.0,545.0" fill="#708fa6"/>
+<rect x="70" y="340" width="236" height="194" rx="16" fill="#122536" stroke="#68e5b2" stroke-width="1.5"/>
+<text x="90" y="357" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">1 · SLACK</text>
+<text x="90" y="382" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Start</text>
+<text x="90" y="410" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">monitoring</text>
+<text x="90" y="445" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">A person mentions</text>
+<text x="90" y="471" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">the bot in the thread.</text>
+<rect x="333" y="340" width="237" height="194" rx="16" fill="#122536" stroke="#7dc7f7" stroke-width="1.5"/>
+<text x="353" y="357" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">2 · DETECTOR</text>
+<text x="353" y="382" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Check</text>
+<text x="353" y="410" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">the shift</text>
+<text x="353" y="445" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Scheduled check:</text>
+<text x="353" y="471" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">roster and handover.</text>
+<polygon points="699.0,340 806,437.0 699.0,534 592,437.0" fill="#163629" stroke="#68e5b2" stroke-width="1.5"/>
+<text x="699.0" y="408.0" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="text-before-edge">Handover</text>
+<text x="699.0" y="437.0" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="text-before-edge">missing?</text>
+<rect x="833" y="340" width="251" height="194" rx="16" fill="#122536" stroke="#c3b0fc" stroke-width="1.5"/>
+<text x="853" y="357" fill="#c3b0fc" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">3 · AGENT</text>
+<text x="853" y="382" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Prepare</text>
+<text x="853" y="410" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">the proposal</text>
+<text x="853" y="445" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Evidence of absence,</text>
+<text x="853" y="471" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">messages and orders.</text>
+<rect x="1109" y="340" width="239" height="194" rx="16" fill="#122536" stroke="#68e5b2" stroke-width="1.5"/>
+<text x="1129" y="357" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">4 · HUMAN</text>
+<text x="1129" y="382" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Review</text>
+<text x="1129" y="410" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">and approve</text>
+<text x="1129" y="445" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Document, orders, notice.</text>
+<text x="1129" y="470" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">High risk: confirm again.</text>
+<rect x="1373" y="340" width="235" height="194" rx="16" fill="#122536" stroke="#f7ce83" stroke-width="1.5"/>
+<text x="1393" y="357" fill="#f7ce83" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">5 · BOUNDARY</text>
+<text x="1393" y="382" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Authorize</text>
+<text x="1393" y="410" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">and execute</text>
+<text x="1393" y="445" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="16" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Scope + key per action.</text>
+<text x="1393" y="469" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="16" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">MCP writer / Slack output.</text>
+<rect x="1632" y="340" width="218" height="194" rx="16" fill="#122536" stroke="#68e5b2" stroke-width="1.5"/>
+<text x="1652" y="357" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">6 · RESULT</text>
+<text x="1652" y="382" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Confirm</text>
+<text x="1652" y="410" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">the handover</text>
+<text x="1652" y="445" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="16" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Records in Ambiguous</text>
+<text x="1652" y="469" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="16" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">and result in the thread.</text>
+<text x="819" y="409" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" dominant-baseline="text-before-edge">Yes</text>
+<rect x="579" y="215" width="240" height="85" rx="16" fill="#122536" stroke="#7dc7f7" stroke-width="1.5"/>
+<text x="699" y="231" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" dominant-baseline="text-before-edge">ALREADY EXISTS</text>
+<text x="699" y="258" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="400" text-anchor="middle" dominant-baseline="text-before-edge">No new proposal</text>
+<text x="713" y="308" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">No</text>
+<rect x="1109" y="215" width="239" height="85" rx="16" fill="#122536" stroke="#f7ce83" stroke-width="1.5"/>
+<text x="1229" y="231" fill="#f7ce83" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" dominant-baseline="text-before-edge">REJECTED</text>
+<text x="1229" y="258" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="middle" dominant-baseline="text-before-edge">Execution does not start</text>
+<rect x="1373" y="215" width="235" height="85" rx="16" fill="#122536" stroke="#f7ce83" stroke-width="1.5"/>
+<text x="1490" y="231" fill="#f7ce83" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="middle" dominant-baseline="text-before-edge">MISSING PERMISSION</text>
+<text x="1490" y="258" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="middle" dominant-baseline="text-before-edge">That action is blocked</text>
+<rect x="70" y="641" width="500" height="164" rx="16" fill="#122536" stroke="#7dc7f7" stroke-width="1.5"/>
+<text x="90" y="658" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">WORK DATA SOURCE</text>
+<text x="90" y="683" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Ambiguous via MCP</text>
+<text x="90" y="718" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">The detector queries workspace data.</text>
+<text x="90" y="744" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">If the handover is missing, it attaches the search</text>
+<text x="90" y="770" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">and the sources the agent will use.</text>
+<rect x="642" y="641" width="442" height="164" rx="16" fill="#122536" stroke="#c3b0fc" stroke-width="1.5"/>
+<text x="662" y="658" fill="#c3b0fc" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">MODEL WITH FALLBACK</text>
+<text x="662" y="683" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">AI proposes; it does not execute</text>
+<text x="662" y="718" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">BuiltInAgent generates the proposal.</text>
+<text x="662" y="744" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">If the primary fails, withFallback retries</text>
+<text x="662" y="770" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">the run with the alternative model.</text>
+<rect x="1158" y="641" width="692" height="164" rx="16" fill="#122536" stroke="#7dc7f7" stroke-width="1.5"/>
+<text x="1178" y="658" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">PERSISTENCE</text>
+<text x="1178" y="683" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Approval and results are saved</text>
+<text x="1178" y="718" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Local JSON: proposals and recorded actions.</text>
+<text x="1178" y="745" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">A retry uses the same proposal and checks</text>
+<text x="1178" y="772" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">the results already saved.</text>
+<rect x="70" y="860" width="1780" height="98" rx="16" fill="#102a27" stroke="#3f7667" stroke-width="1.5"/>
+<text x="93" y="879" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">FOR EACH ACTION</text>
+<text x="93" y="908" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="25" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Check scope  →  look up key  →  execute if not recorded  →  save the result</text>
+<polyline points="70,1008 1850,1008" fill="none" stroke="#284154" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="1028" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Implemented flow · one approval may contain several actions; a failure can leave partial results.</text>
+<text x="1850" y="1028" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="600" text-anchor="end" dominant-baseline="text-before-edge">Club de Programación FIUNA</text>
+</svg>

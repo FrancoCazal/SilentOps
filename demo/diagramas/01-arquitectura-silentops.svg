@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img"><title>How SilentOps connects</title><desc>Slack brings people together; the backend coordinates work; Ambiguous stores the records.</desc>
+<rect width="1920" height="1080" fill="#091521"/>
+<text x="70" y="46" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">SILENTOPS  /  CONTINUITY BETWEEN SHIFTS</text>
+<text x="70" y="80" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="48" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">How SilentOps connects</text>
+<text x="70" y="148" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Slack brings people together; the backend coordinates work; Ambiguous stores the records.</text>
+<rect x="500" y="439" width="1350" height="232" rx="22" fill="#0d1f2e" stroke="#2b475d" stroke-width="1.5"/>
+<text x="525" y="449" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">PACKAGES / LOOP-CORE</text>
+<polyline points="398,376 398,483" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="398.0,483.0 403.0,472.0 393.0,472.0" fill="#68e5b2"/>
+<polygon points="398.0,376.0 393.0,387.0 403.0,387.0" fill="#68e5b2"/>
+<polyline points="422,563 540,563" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="540.0,563.0 529.0,558.0 529.0,568.0" fill="#68e5b2"/>
+<polyline points="940,563 995,563" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="995.0,563.0 984.0,558.0 984.0,568.0" fill="#68e5b2"/>
+<polyline points="1335,563 1400,563" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1400.0,563.0 1389.0,558.0 1389.0,568.0" fill="#68e5b2"/>
+<polyline points="740,376 740,483" fill="none" stroke="#c3b0fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="740.0,483.0 745.0,472.0 735.0,472.0" fill="#c3b0fc"/>
+<polygon points="740.0,376.0 735.0,387.0 745.0,387.0" fill="#c3b0fc"/>
+<polyline points="1165,376 1165,413 846,413 846,483" fill="none" stroke="#7dc7f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="846.0,483.0 851.0,472.0 841.0,472.0" fill="#7dc7f7"/>
+<polygon points="1165.0,376.0 1160.0,387.0 1170.0,387.0" fill="#7dc7f7"/>
+<polyline points="1215,376 1215,398 1660,398 1660,483" fill="none" stroke="#7dc7f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1660.0,483.0 1665.0,472.0 1655.0,472.0" fill="#7dc7f7"/>
+<polygon points="1215.0,376.0 1210.0,387.0 1220.0,387.0" fill="#7dc7f7"/>
+<polyline points="1540,376 1540,483" fill="none" stroke="#f7ce83" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1540.0,483.0 1545.0,472.0 1535.0,472.0" fill="#f7ce83"/>
+<polygon points="1540.0,376.0 1535.0,387.0 1545.0,387.0" fill="#f7ce83"/>
+<polyline points="1170,641 1170,721 245,721 245,641" fill="none" stroke="#68e5b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="245.0,641.0 240.0,652.0 250.0,652.0" fill="#68e5b2"/>
+<polygon points="1170.0,641.0 1165.0,652.0 1175.0,652.0" fill="#68e5b2"/>
+<polyline points="1235,641 1235,821" fill="none" stroke="#708fa6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1235.0,821.0 1240.0,810.0 1230.0,810.0" fill="#708fa6"/>
+<polyline points="1660,641 1660,821" fill="none" stroke="#708fa6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polygon points="1660.0,821.0 1665.0,810.0 1655.0,810.0" fill="#708fa6"/>
+<polygon points="1660.0,641.0 1655.0,652.0 1665.0,652.0" fill="#708fa6"/>
+<rect x="70" y="225" width="352" height="151" rx="16" fill="#122536" stroke="#68e5b2" stroke-width="1.5"/>
+<text x="90" y="242" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">PEOPLE AND CHANNEL</text>
+<text x="90" y="267" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Slack</text>
+<text x="90" y="302" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Supervisor and team</text>
+<text x="90" y="328" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Mention, card and human decision</text>
+<rect x="70" y="483" width="352" height="158" rx="16" fill="#122536" stroke="#68e5b2" stroke-width="1.5"/>
+<text x="90" y="500" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">APPS / CHANNEL</text>
+<text x="90" y="525" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Node.js server</text>
+<text x="90" y="560" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Receives events and posts cards</text>
+<text x="90" y="585" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Watches the thread; schedules checks</text>
+<text x="79" y="408" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">CopilotKit Intelligence / Channels</text>
+<text x="80" y="431" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Outbound WebSocket from Node</text>
+<rect x="540" y="225" width="400" height="151" rx="16" fill="#122536" stroke="#c3b0fc" stroke-width="1.5"/>
+<text x="560" y="242" fill="#c3b0fc" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">AI PROVIDERS</text>
+<text x="560" y="267" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Configured models</text>
+<text x="560" y="302" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Demo: Gemini Flash → Gemini Pro</text>
+<text x="560" y="328" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Also supports OpenAI / OpenRouter</text>
+<rect x="995" y="225" width="340" height="151" rx="16" fill="#122536" stroke="#7dc7f7" stroke-width="1.5"/>
+<text x="1015" y="242" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">WORKSPACE</text>
+<text x="1015" y="267" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Ambiguous</text>
+<text x="1015" y="302" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Roster · documents</text>
+<text x="1015" y="328" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Messages · work orders</text>
+<rect x="1400" y="225" width="450" height="151" rx="16" fill="#122536" stroke="#f7ce83" stroke-width="1.5"/>
+<text x="1420" y="242" fill="#f7ce83" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">SERVICE AUTHORIZATION</text>
+<text x="1420" y="267" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Auth0</text>
+<text x="1420" y="302" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">M2M token + scopes per action</text>
+<text x="1420" y="328" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Does not identify the Slack supervisor</text>
+<rect x="540" y="483" width="400" height="158" rx="16" fill="#122536" stroke="#c3b0fc" stroke-width="1.5"/>
+<text x="560" y="500" fill="#c3b0fc" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">READ AND PROPOSE</text>
+<text x="560" y="525" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Detector + agent</text>
+<text x="560" y="560" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">BuiltInAgent / CopilotKit Runtime</text>
+<text x="560" y="586" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">withFallback retries a failed run</text>
+<rect x="995" y="483" width="340" height="158" rx="16" fill="#122536" stroke="#68e5b2" stroke-width="1.5"/>
+<text x="1015" y="500" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">DECISION</text>
+<text x="1015" y="525" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Proposal + approval</text>
+<text x="1015" y="560" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">A human reviews it in Slack</text>
+<text x="1015" y="586" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">The decision is persisted</text>
+<rect x="1400" y="483" width="450" height="158" rx="16" fill="#122536" stroke="#f7ce83" stroke-width="1.5"/>
+<text x="1420" y="500" fill="#f7ce83" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">WRITE</text>
+<text x="1420" y="525" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Write boundary</text>
+<text x="1420" y="560" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Checks scope and looks up the key</text>
+<text x="1420" y="586" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">MCP writer + output to the Slack thread</text>
+<text x="963" y="389" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">MCP reads</text>
+<text x="1255" y="410" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Approved writes · MCP</text>
+<text x="1690" y="431" fill="#f7ce83" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Permissions per action</text>
+<text x="513" y="743" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Cards, decisions and results return to the watched thread</text>
+<rect x="70" y="821" width="352" height="151" rx="16" fill="#122536" stroke="#7dc7f7" stroke-width="1.5"/>
+<text x="90" y="838" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">APPS / WEB · NEXT.JS</text>
+<text x="90" y="863" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Demo interface</text>
+<text x="90" y="898" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Landing, access and console</text>
+<text x="90" y="923" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">The console still simulates its actions</text>
+<rect x="540" y="821" width="400" height="151" rx="16" fill="#122536" stroke="#c3b0fc" stroke-width="1.5"/>
+<text x="560" y="838" fill="#c3b0fc" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">PACKAGES / AGENT-CORE</text>
+<text x="560" y="863" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">Shared configuration</text>
+<text x="560" y="898" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Resolves the provider:model reference</text>
+<text x="560" y="923" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Runtime makes the model call</text>
+<rect x="995" y="821" width="855" height="151" rx="16" fill="#122536" stroke="#7dc7f7" stroke-width="1.5"/>
+<text x="1015" y="838" fill="#7dc7f7" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">LOCAL STATE</text>
+<text x="1015" y="863" fill="#f1f6fa" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="600" text-anchor="start" dominant-baseline="text-before-edge">JSON files</text>
+<text x="1015" y="898" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Proposals + results indexed by idempotency key</text>
+<text x="1015" y="925" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Local storage is neither a distributed database nor a job queue.</text>
+<polyline points="70,1008 1850,1008" fill="none" stroke="#284154" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="1028" fill="#aebfce" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start" dominant-baseline="text-before-edge">Code architecture · mobile, voice and kit-demo are inherited interfaces outside the Tier 0 flow.</text>
+<text x="1850" y="1028" fill="#68e5b2" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="600" text-anchor="end" dominant-baseline="text-before-edge">Club de Programación FIUNA</text>
+</svg>
