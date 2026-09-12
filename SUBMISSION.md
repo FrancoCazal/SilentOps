@@ -31,15 +31,53 @@ Choose your city on the [global event page](https://aitinkerers.org/hackathons/g
 
 ## Build eligibility
 
-- [ ] Our submitted project is a net-new build created during the official hackathon period
-- [ ] Its core functionality was built during the event; we are not resubmitting or extending a pre-existing project and entering it as new
-- [ ] We identify inherited templates, libraries, prompts, components, and starter code separately from our event work
+- [x] Our submitted project is a net-new build created during the official hackathon period
+- [x] Its core functionality was built during the event; we are not resubmitting or extending a pre-existing project and entering it as new
+- [x] We identify inherited templates, libraries, prompts, components, and starter code separately from our event work
 
 **What we inherited**
-<!-- Include this starter kit and any reused examples. -->
+
+The [CopilotKit `agents-everywhere-starter-kit`](https://github.com/CopilotKit/agents-everywhere-starter-kit),
+forked at commit `86f547d` and kept as the `upstream` remote so the boundary is
+auditable with `git diff 86f547d..HEAD`. From it we use, unmodified:
+
+- The monorepo scaffold and toolchain: npm workspaces, TypeScript, `node:test`.
+- `apps/channel` — the CopilotKit Channels host and its Slack transport.
+- `apps/web` — the Next.js + AG-UI shell.
+- `packages/agent-core` — provider resolution (`resolveModel`) and the kit's
+  own agent/prompt examples.
+- The kit's incident-workflow demo, which we did **not** build on and do not
+  present as ours. It remains in the tree untouched.
+
+Third-party libraries: `@copilotkit/runtime`, `@modelcontextprotocol/sdk`,
+`jose`, the AI SDK.
+
+We modified seven inherited files, all for wiring only — no inherited logic was
+repurposed: `.gitignore`, `AGENTS.md`, this file, three `package.json` files
+(registering the `loop-core` workspace and its scripts), and `package-lock.json`.
 
 **What we built during the hackathon**
-<!-- Describe the new core interaction and point to its implementation. Running the supplied incident demo alone does not establish a new project. -->
+
+Everything in `packages/loop-core/` — a new workspace, created during the event —
+plus `SILENTOPS.md`, `ESTADO.md` and `team-docs/`. **43 new files, ~5,150 lines,
+3 deletions**, across four commits starting at `ce8330d`.
+
+The core interaction is net-new and has no counterpart in the starter kit:
+
+| What | Where |
+|---|---|
+| Absence detector: wakes at the shift boundary, queries for the handover that should exist, records the evidence that it does not | `packages/loop-core/src/jobs/missing-handover.ts` |
+| The frozen contracts — `InboundEvent` with its `context`, `Proposal`, `OutboundChannel` | `packages/loop-core/src/contracts.ts` |
+| Propose-only agent loop: the model's single action tool is `propose_action`, so no path exists from the model to a write | `packages/loop-core/src/agent/`, `src/agent/propose-tool.ts` |
+| Single write boundary: Auth0 scope per action + idempotency, executed only after human approval | `packages/loop-core/src/boundary/write.ts`, `auth0.ts`, `idempotency.ts` |
+| Read-only Ambiguous adapter: the only module that knows the provider's MCP tool names, so the model can never name a write tool | `packages/loop-core/src/boundary/ambiguous-reader.ts`, `src/domain/workspace-reader.ts` |
+| Domain prompts and the four read tools for cold-chain shift handover | `packages/loop-core/src/domain/prompts.ts`, `tools.ts` |
+| Cross-provider fallback with a demo kill switch | `packages/loop-core/src/model/with-fallback.ts` |
+| Eval harness with a scripted model (runs the whole loop offline) and a 15-case golden set including three adversarial cases | `packages/loop-core/evals/` |
+
+Verifiable from a clean clone: `npm run verify` runs 47 tests in `loop-core`,
+including the 15 golden cases. `npm run silentops:detect -w loop-core` runs the
+detector against the live Ambiguous workspace, read-only.
 
 ## Title and description
 
