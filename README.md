@@ -181,9 +181,12 @@ Reproducible with the commands above, against the live workspace and without a
 model: the detector finds the absence and preserves the evidence; an approved
 write lands as a document with its sources (a bullet without a source is
 dropped and logged); replaying the same approved proposal executes nothing and
-sends nothing; the proposal and idempotency state are on disk; the detector
-does not fire when the handover exists. The full record, including open issues
-and their owners, is in [`fixes/backend-r2.md`](fixes/backend-r2.md).
+sends nothing; the proposal and idempotency state are on disk. The negative
+case (the handover exists, so the detector does not fire) is covered by the
+detector's tests; running it live means creating and then permanently deleting
+a handover document, because workspace search also returns trashed documents.
+The full record, including open issues and their owners, is in
+[`fixes/backend-r2.md`](fixes/backend-r2.md).
 
 ## Inherited vs built
 
