@@ -1,5 +1,51 @@
 <div align="center">
 
+# SilentOps
+
+**Continuity for critical cold-chain operations.**
+
+*Critical facilities do not fail only when equipment breaks. They fail when the
+next shift does not know what is still open.*
+
+</div>
+
+SilentOps is an operational-continuity agent that lives in a refrigerated
+logistics hub's operations Slack channel. At the end of a guard shift, the
+signal that matters is sometimes an **absence**: the handover document was never
+written, even though the channel and work orders show unfinished work. A
+deterministic detector wakes at the shift boundary, searches for the handover
+that should exist, and records the evidence that it does not. The agent then
+prepares a sourced handover, the open work to reassign, and a Slack update — and
+the outgoing supervisor approves before anything is written.
+
+> A standalone chat cannot wake at the expected shift boundary, query for the
+> required record and preserve that chain of evidence.
+
+SilentOps never controls equipment or decides safety. It prepares a sourced
+handover for the responsible human to approve.
+
+- **What it is and how it's scoped:** [`SILENTOPS.md`](./SILENTOPS.md)
+- **What we built vs. inherited, and the submission:** [`SUBMISSION.md`](./SUBMISSION.md)
+- **Two-minute demo video:** _(add link before submission)_
+
+Our own work is the approval loop in [`packages/loop-core`](./packages/loop-core)
+and the SilentOps Slack surface in [`apps/channel/src`](./apps/channel/src)
+(`silentops.tsx`, `approval-card.tsx`). Verify it offline from a clean clone with
+`npm ci && npm run verify` — no credentials required. To see the approval card
+itself without a Slack workspace, run `npm run preview:card -w channel` and paste
+`apps/channel/preview/01-pending.json` into Slack's
+[Block Kit Builder](https://app.slack.com/block-kit-builder); the four emitted
+states are the pending card, the approval, a rejection and the shift where the
+agent stays silent. Live delivery needs a Slack Channel, an Ambiguous workspace
+and a model key (see below).
+
+The rest of this file is the inherited CopilotKit starter-kit guide; its
+onboarding and setup steps are still the real path to run the Slack surface.
+
+---
+
+<div align="center">
+
 # Agents, Everywhere Hackathon Starter Kit
 
 ![Agents, Everywhere hackathon — OpenAI, CopilotKit, OpenRouter, Exa, Auth0, and Ambiguous AI](assets/banner.png)

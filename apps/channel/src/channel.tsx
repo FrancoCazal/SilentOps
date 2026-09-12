@@ -3,6 +3,7 @@ import { isSearchConfigured, isWorkplaceConfigured, WORKPLACE_CONTEXT } from "ag
 import { makeChannelAgent } from "./agent";
 import { required } from "./env";
 import { IncidentCard, Timeline, welcomeMessage } from "./components";
+import { runHandover } from "./silentops";
 import { proposeAction, readThread, searchTheWeb } from "./tools";
 
 // Tools are registered only when their credential is present, so the agent is
@@ -48,11 +49,16 @@ export const channel = createChannel({
 
 });
 
-// A mention subscribes the conversation, so the agent then follows along instead
-// of needing to be @-mentioned every single turn.
+// A mention subscribes the conversation and replays the SilentOps detector
+// against this thread: deterministic detection, then a proposal, then the
+// approval card. The product's real trigger is the scheduled shift-boundary run
+// (`npm run silentops:detect -w loop-core`); the mention is the development
+// smoke test for the same code path and must not be presented as the proactive
+// detection in the demo. Passing `origin: "manual-replay"` makes the card SAY so,
+// so a frame filmed by accident cannot be mistaken for the real trigger.
 channel.onMention(async ({ thread }) => {
   await thread.subscribe();
-  await thread.runAgent();
+  await runHandover(thread, { origin: "manual-replay" });
 });
 
 // Non-mentioned turns only ever reach onMessage — gate them on the flag or the

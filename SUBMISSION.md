@@ -81,17 +81,64 @@ detector against the live Ambiguous workspace, read-only.
 
 ## Title and description
 
+**Title:** SilentOps — continuity for critical cold-chain operations
+
 **What you built**
-<!-- Explain the complete interaction your demo shows. -->
+
+An operational-continuity agent that lives in a refrigerated logistics hub's
+operations Slack channel and catches the handover nobody wrote. Fifteen minutes
+before the night shift ends, a deterministic detector reads the on-call roster,
+searches the workspace for the handover document that should exist, and records
+the result. When that search comes back empty, the agent reads the channel since
+shift start and the open work orders, and drafts a proposal: a sourced handover
+document (at most five bullets, each citing the channel message or work order it
+came from), the open work to reassign to the incoming technician, and the exact
+Slack message to post. The outgoing supervisor sees the absence evidence first,
+then the proposal, and taps Approve. Only then does the single write boundary
+create the document, reassign the approved work orders, and post the link.
+Nothing is written before that tap.
 
 **Who it is for**
-<!-- Name a person in a concrete situation. -->
+
+Ana, the supervisor closing the night shift at a cold-chain logistics hub. She
+coordinates technicians, cold rooms, maintenance work orders and
+customer-impacting incidents, and at 06:00 she hands the floor to Bruno. The
+handover is the one task most easily lost precisely when the shift was busy —
+and its absence is invisible until something falls through it.
 
 **Why the context matters**
-<!-- What did the agent know or do because it lived in this surface? -->
+
+The trigger is not a human message — it is an absence. Nobody asked SilentOps
+anything; a scheduled job woke at the shift boundary, queried for a record that
+did not exist, and preserved the proof (`searched Documents for "Handover Noche
+2026-09-12" at 05:45 → 0 results`). A standalone chatbox cannot wake at the
+expected shift boundary, query for the record that should exist, and preserve
+that chain of evidence — it can only answer when spoken to. Living in the
+operations channel is also what makes the control natural: the person approving
+is the person going off shift, and the approval is the exit signature they were
+already making. The agent has no write access; everything the demo shows was
+approved by the technician leaving the floor.
 
 **Sponsor technologies used**
-<!-- Name the tools you actually used and the visible contribution of each. -->
+
+- **CopilotKit Channels** — the Slack surface. The approval card renders the
+  absence evidence and the proposal as native Block Kit, and its Approve button
+  is the only path to a write.
+- **Ambiguous AI** — the system of record, over MCP. Shifts, documents and work
+  orders are read to build the proposal and written back on approval; the
+  read-only adapter is the only module that knows the provider's tool names, so
+  the model can never name a write tool.
+- **Trigger.dev** — the scheduled shift-boundary run. The cron is not decoration:
+  it *is* the product's trigger, the reason the agent exists without anyone
+  prompting it.
+- **Auth0** — the M2M scope the write boundary verifies (`write:workspace`,
+  `send:channel`, `schedule:job`) before every action, with an idempotency key.
+- **OpenAI / OpenRouter** — the model, with a demonstrated cross-provider
+  fallback: `FORCE_PROVIDER_FAILURE=1` fails the primary and the same run
+  completes on the secondary.
+
+Sponsor count is not a judging criterion; each tool above carries a distinct,
+visible part of the one workflow.
 
 ## Evidence for the judging criteria
 
