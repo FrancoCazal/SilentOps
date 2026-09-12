@@ -27,6 +27,7 @@ const KEYS = [
   "FORCE_PROVIDER_FAILURE",
   "OPENAI_API_KEY",
   "OPENROUTER_API_KEY",
+  "GOOGLE_API_KEY",
 ] as const;
 
 const silent = () => {};
@@ -43,6 +44,7 @@ beforeEach(() => {
   process.env.OPENAI_API_KEY = "test-openai-key";
   process.env.OPENROUTER_API_KEY = "test-openrouter-key";
   process.env.MODEL_PROVIDER = "openai";
+  delete process.env.GOOGLE_API_KEY;
   delete process.env.MODEL;
   delete process.env.FALLBACK_MODEL;
   delete process.env.FORCE_PROVIDER_FAILURE;
@@ -141,6 +143,78 @@ describe("fallback de provider", () => {
 
     const attempt = await withFallback<Attempt>(async (_model, a) => a, silent);
     assert.equal(attempt.provider, "openai");
+  });
+});
+
+/**
+ * OpenRouter dejo de ser una opcion durante el evento. El fallback tiene que
+ * poder ser Gemini sin tocar nada mas del loop.
+ */
+describe("fallback con Gemini", () => {
+  it("reconoce google y sus alias como provider primario", () => {
+    for (const alias of ["google", "gemini", "google-gemini", "  Gemini  "]) {
+      process.env.MODEL_PROVIDER = alias;
+      assert.equal(primaryProvider(), "google", `alias ${alias}`);
+    }
+  });
+
+  it("con google primario y solo openai configurado, el fallback es openai", () => {
+    process.env.MODEL_PROVIDER = "google";
+    process.env.GOOGLE_API_KEY = "test-google-key";
+    delete process.env.OPENROUTER_API_KEY;
+    assert.equal(fallbackProvider(), "openai");
+  });
+
+  it("salta de google a openai y completa el mismo run", async () => {
+    process.env.MODEL_PROVIDER = "google";
+    process.env.GOOGLE_API_KEY = "test-google-key";
+    process.env.MODEL = "gemini-2.5-flash";
+    delete process.env.OPENROUTER_API_KEY;
+    process.env.FORCE_PROVIDER_FAILURE = "1";
+
+    const attempt = await withFallback<Attempt>(async (_model, a) => a, silent);
+    assert.equal(attempt.n, 2);
+    assert.equal(attempt.provider, "openai");
+  });
+
+  it("no elige un provider sin clave: sin openrouter, openai primario cae a google", () => {
+    process.env.MODEL_PROVIDER = "openai";
+    delete process.env.OPENROUTER_API_KEY;
+    process.env.GOOGLE_API_KEY = "test-google-key";
+    assert.equal(
+      fallbackProvider(),
+      "google",
+      "un salto a un provider sin clave muere con un error de config que no se reintenta",
+    );
+  });
+
+  it("exige FALLBACK_MODEL cuando el fallback es google, en vez de pedirle un modelo de GPT", async () => {
+    process.env.MODEL_PROVIDER = "openai";
+    process.env.MODEL = "gpt-4.1";
+    delete process.env.OPENROUTER_API_KEY;
+    process.env.GOOGLE_API_KEY = "test-google-key";
+    process.env.FORCE_PROVIDER_FAILURE = "1";
+
+    await assert.rejects(
+      () => withFallback(async (_model, a) => a, silent),
+      /FALLBACK_MODEL es obligatorio cuando el fallback es google/,
+    );
+  });
+
+  it("con FALLBACK_MODEL puesto, el salto a google funciona", async () => {
+    process.env.MODEL_PROVIDER = "openai";
+    process.env.MODEL = "gpt-4.1";
+    delete process.env.OPENROUTER_API_KEY;
+    process.env.GOOGLE_API_KEY = "test-google-key";
+    process.env.FALLBACK_MODEL = "gemini-2.5-flash";
+    process.env.FORCE_PROVIDER_FAILURE = "1";
+
+    const attempt = await withFallback<Attempt>(async (_model, a) => a, silent);
+    assert.equal(attempt.provider, "google");
+    assert.equal(attempt.n, 2);
+    // El entorno queda como estaba: una fuga cambiaria de provider en silencio.
+    assert.equal(process.env.MODEL_PROVIDER, "openai");
+    assert.equal(process.env.MODEL, "gpt-4.1");
   });
 });
 

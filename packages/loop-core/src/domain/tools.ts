@@ -12,6 +12,7 @@
  * el resultado. Ninguna de estas escribe: el agente no tiene un camino a una
  * escritura, y la unica tool de accion que ve es propose_action.
  */
+import { resolveAt } from "./clock";
 import { readTool } from "./workspace-reader";
 
 /**
@@ -68,7 +69,7 @@ export const readOnlyTools: DomainTool[] = [
         additionalProperties: false,
       },
     },
-    handler: async (args) => readTool(TOOLS.currentShift, { at: args.at }),
+    handler: async (args) => readTool(TOOLS.currentShift, { at: resolveAt(args.at) }),
   },
   {
     definition: {

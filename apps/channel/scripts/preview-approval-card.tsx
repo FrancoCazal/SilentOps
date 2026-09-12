@@ -13,7 +13,7 @@
  *
  * Run:  npm run preview:card -w channel
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderToIR } from "@copilotkit/channels";
@@ -142,6 +142,12 @@ const states = [
 ];
 
 mkdirSync(OUT_DIR, { recursive: true });
+// Clear stale output: renaming a state used to leave an orphan file behind, and
+// pasting yesterday's card into Block Kit Builder is a silent way to film the
+// wrong thing.
+for (const stale of readdirSync(OUT_DIR).filter((f) => f.endsWith(".json"))) {
+  rmSync(join(OUT_DIR, stale));
+}
 
 for (const state of states) {
   const { blocks, accent } = await toBlockKit(state.node);

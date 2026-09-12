@@ -68,6 +68,23 @@ export async function handleEvent(
     : await withFallback(runWith, log);
 
   const proposal = buildProposal({ runId, evt, raw, ttlMinutes: options.ttlMinutes ?? 10 });
+
+  // Una propuesta con 0 acciones despues de que el modelo SI llamo propose_action
+  // significa que el payload no cumplia el contrato y se descarto en silencio.
+  // Ese silencio cuesta horas de debug: dejar el payload crudo en el log.
+  if (raw.length > 0 && proposal.actions.length < raw.length) {
+    for (const candidate of raw) {
+      if (toAction(candidate) === undefined) {
+        log("propose_action descartada: payload incompleto para su kind", {
+          kind: candidate.kind,
+          summary: candidate.summary,
+          payloadKeys: Object.keys(candidate.payload).join(", "),
+          payload: JSON.stringify(candidate.payload).slice(0, 400),
+        });
+      }
+    }
+  }
+
   log("proposal built", {
     proposalId: proposal.id,
     actions: proposal.actions.length,
