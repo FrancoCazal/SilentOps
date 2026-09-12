@@ -14,6 +14,7 @@ export const AMBIGUOUS_READ_TOOLS = {
   calendars: "list_calendars",
   events: "list_events",
   documentSearch: "search_workspace",
+  listDocuments: "list_documents",
   channels: "list_channels",
   messages: "get_channel_messages",
   tasks: "list_tasks",
@@ -116,15 +117,26 @@ async function documentSearch(
 ): Promise<{ items: Record<string, unknown>[] }> {
   const query = typeof args.query === "string" ? args.query.trim() : "";
   if (!query) throw new Error("search-documents requiere query");
-  return {
-    items: rows(
-      await call(AMBIGUOUS_READ_TOOLS.documentSearch, {
-        query,
-        modules: ["docs"],
-        limit: 20,
-      }),
-    ),
-  };
+  const hits = rows(await call(AMBIGUOUS_READ_TOOLS.documentSearch, {
+    query,
+    modules: ["docs"],
+    limit: 20,
+  }));
+  // F-16: search_workspace incluye papelera sin trashed_at. Solo cuenta lo
+  // confirmado vivo en este listado, consultado una vez por busqueda.
+  const documents = payloadOf(await call(AMBIGUOUS_READ_TOOLS.listDocuments, {}));
+  if (!Array.isArray(documents) && !(isRecord(documents) &&
+    (Array.isArray(documents.data) || Array.isArray(documents.items)))) {
+    throw new Error("list_documents devolvio una respuesta invalida");
+  }
+  const liveIds = new Set(rows(documents)
+    .filter((document) => document.trashed_at === null)
+    .map((document) => field(document, "id"))
+    .filter((id): id is string => !!id));
+  return { items: hits.filter((hit) => {
+    const id = field(hit, "id");
+    return !!id && liveIds.has(id);
+  }) };
 }
 
 async function channelHistory(

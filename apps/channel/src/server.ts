@@ -6,8 +6,14 @@
 import { createServer } from "node:http";
 import { CopilotKitIntelligence, CopilotRuntime } from "@copilotkit/runtime/v2";
 import { createCopilotNodeListener } from "@copilotkit/runtime/v2/node";
-import { channel } from "./channel";
+import { bootstrapBoundary, loggerFor } from "loop-core";
+import { silentopsChannel as channel, startDetectorLoop } from "./silentops-channel";
 import { required } from "./env";
+
+// Antes de aceptar un solo evento: quien ejecuta las escrituras aprobadas, quien
+// lee el workspace, y donde se persisten propuestas e idempotencia. Loguea si
+// Auth0 esta en bypass o bloqueado; nunca degrada en silencio.
+await bootstrapBoundary({ log: loggerFor("boot") });
 
 const intelligence = new CopilotKitIntelligence({
   apiKey: required("INTELLIGENCE_API_KEY"),
@@ -35,7 +41,9 @@ const listener = createCopilotNodeListener({ runtime, basePath: "/api/copilotkit
 const channels = listener.channels;
 const server = createServer(listener);
 
+let stopDetector: (() => void) | undefined;
 teardown = async () => {
+  stopDetector?.();
   await channels.stop();
   if (server.listening) server.close();
 };
@@ -60,5 +68,9 @@ if (status.overall !== "online") {
 const port = Number(process.env.PORT ?? 3000);
 server.listen(port, () => {
   console.log(`\n  ✓ Channel "${process.env.CHANNEL_CODE}" online — listening on :${port}`);
-  console.log(`    Invite the bot to a channel (/invite @yourbot), then @-mention it.\n`);
+  console.log(`    Invita el bot a #operaciones-hub-frio y mencionalo una vez para armar la vigilancia.
+`);
+  // El detector corre en proceso. Con SILENTOPS_DEMO_AT congelado en 05:45,
+  // encuentra la ausencia en cada tick; el loop deduplica por evento.
+  stopDetector = startDetectorLoop();
 });

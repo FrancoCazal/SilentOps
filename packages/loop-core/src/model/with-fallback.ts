@@ -93,6 +93,11 @@ export function primaryProvider(): ProviderName {
  */
 export function fallbackProvider(): ProviderName {
   const primary = primaryProvider();
+  // FALLBACK_PROVIDER manda si esta y es valido. Puede ser el mismo provider
+  // con otro FALLBACK_MODEL (fallback de modelo, no de vendor): hoy OpenRouter
+  // esta caido y OpenAI sin credito, asi que google -> google/otro modelo.
+  const explicit = canonicalProvider(process.env.FALLBACK_PROVIDER);
+  if (explicit) return explicit;
   const others = PROVIDERS.filter((p) => p !== primary);
   return others.find(isProviderConfigured) ?? others[0]!;
 }

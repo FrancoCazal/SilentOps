@@ -1,196 +1,213 @@
-<div align="center">
+# SilentOps — continuity for critical cold-chain operations
 
-# SilentOps
+> Critical facilities do not fail only when equipment breaks. They fail when the
+> next shift does not know what is still open.
 
-**Continuity for critical cold-chain operations.**
+SilentOps lives in the operations Slack channel of a refrigerated logistics hub.
+At the end of a guard shift, a **deterministic detector** checks the roster and
+the document system for the technical handover that should exist. When it finds
+that the record was never written, it records that evidence, and an agent
+prepares a **sourced handover proposal**: the document, the open work orders to
+reassign, and the Slack notice. A supervisor approves before anything is
+written. The agent can only propose; every write crosses one scoped boundary.
 
-*Critical facilities do not fail only when equipment breaks. They fail when the
-next shift does not know what is still open.*
+Built at the AI Tinkerers **Agents, Everywhere** global hackathon (September
+12–13, 2026) by Club de Programación FIUNA. Product spec: [SILENTOPS.md](SILENTOPS.md).
+Two-minute demo video: _(add link before submission)_.
 
-</div>
+## What the demo shows
 
-SilentOps is an operational-continuity agent that lives in a refrigerated
-logistics hub's operations Slack channel. At the end of a guard shift, the
-signal that matters is sometimes an **absence**: the handover document was never
-written, even though the channel and work orders show unfinished work. A
-deterministic detector wakes at the shift boundary, searches for the handover
-that should exist, and records the evidence that it does not. The agent then
-prepares a sourced handover, the open work to reassign, and a Slack update — and
-the outgoing supervisor approves before anything is written.
+1. **05:45.** The detector reads the current shift from the workspace calendar
+   (Ana leaves at 06:00, Bruno comes in) and searches Documents for
+   `Handover Noche 2026-09-12`. It finds nothing and emits an event whose context
+   carries the evidence verbatim: `searched Documents for "Handover Noche
+   2026-09-12" at 05:45 -> 0 results`.
+2. The agent reads the channel history since shift start and the open work
+   orders, and proposes at most five bullets, each citing its source message or
+   work order, plus the reassignments and the Slack summary.
+3. The approval card in Slack shows the absence evidence and the proposal.
+4. The outgoing supervisor clicks **Approve**. Only then the handover document
+   is created in the workspace, the approved work orders are updated, and the
+   link is posted in Slack.
+5. **Failure path.** With `FORCE_PROVIDER_FAILURE=1` the primary model provider
+   fails and the same run completes on the fallback provider; the switch is in
+   the log. Replaying the same event does not duplicate the document or the
+   message.
 
-> A standalone chat cannot wake at the expected shift boundary, query for the
-> required record and preserve that chain of evidence.
+SilentOps never operates refrigeration, evaluates readings or decides whether a
+product is safe. It prepares a sourced record for an accountable human.
 
-SilentOps never controls equipment or decides safety. It prepares a sourced
-handover for the responsible human to approve.
+## How it works
 
-- **What it is and how it's scoped:** [`SILENTOPS.md`](./SILENTOPS.md)
-- **What we built vs. inherited, and the submission:** [`SUBMISSION.md`](./SUBMISSION.md)
-- **Two-minute demo video:** _(add link before submission)_
+```mermaid
+sequenceDiagram
+    participant D as Detector (cron, no LLM)
+    participant W as Ambiguous workspace
+    participant A as Agent (propose_action only)
+    participant S as Slack card
+    participant H as Human
+    participant B as Write boundary
+    D->>W: current shift, document search, channel history, open work orders
+    D->>A: InboundEvent with absenceEvidence
+    A->>S: Proposal (sourced bullets, reassignments, notice)
+    H->>S: Approve
+    S->>B: approveAndExecute(proposalId)
+    B->>B: Auth0 scope per action + idempotency key
+    B->>W: create_document / update_task (via domain intents)
+    B->>S: link and result
+```
 
-Our own work is the approval loop in [`packages/loop-core`](./packages/loop-core)
-and the SilentOps Slack surface in [`apps/channel/src`](./apps/channel/src)
-(`silentops.tsx`, `approval-card.tsx`). Verify it offline from a clean clone with
-`npm ci && npm run verify` — no credentials required. To see the approval card
-itself without a Slack workspace, run `npm run preview:card -w channel` and paste
-`apps/channel/preview/01-pending.json` into Slack's
-[Block Kit Builder](https://app.slack.com/block-kit-builder); the four emitted
-states are the pending card, the approval, a rejection and the shift where the
-agent stays silent. Live delivery needs a Slack Channel, an Ambiguous workspace
-and a model key (see below).
+Four invariants hold by construction, not by prompt:
 
-The rest of this file is the inherited CopilotKit starter-kit guide; its
-onboarding and setup steps are still the real path to run the Slack surface.
+- **The model cannot write.** Its only action tool is `propose_action`, a
+  frontend tool the runtime resolves; there is no path from the model to a
+  write. Instructions found inside channel messages or work-order descriptions
+  are data, never authority.
+- **One write path.** `packages/loop-core/src/boundary/write.ts` is the only
+  code that mutates the workspace or sends a message. Each action requires the
+  matching Auth0 scope (`write:workspace`, `send:channel`, `schedule:job`) and an
+  idempotency key derived from the source event, so a retried webhook or a
+  second click never duplicates a write. Proposals and idempotency state are
+  persisted on disk and survive a restart.
+- **The model never names a provider tool.** Reads and writes go through
+  domain intents (`silentops.*`). The adapters in `boundary/ambiguous-reader.ts`
+  and `boundary/ambiguous-writer.ts` are the only files that know the Ambiguous
+  MCP tool names and schemas. The writer drops any handover bullet without a
+  source, caps bullets at five, refuses tools outside a short allowlist or
+  absent from the live catalog, and never closes a work order.
+- **Every model call has a fallback.** `model/with-fallback.ts` retries a
+  retryable failure once on another provider or model (`FALLBACK_PROVIDER`,
+  `FALLBACK_MODEL`; by default OpenAI ⇄ OpenRouter, in this build Gemini 2.5
+  Flash → Gemini 2.5 Pro).
 
----
+An absence is rendered as a statement, never as a blank: the card and the
+document say what was searched, where, when, and that nothing was found.
 
-<div align="center">
+## Repository map
 
-# Agents, Everywhere Hackathon Starter Kit
+| Path | What it is |
+|---|---|
+| [`packages/loop-core/`](packages/loop-core/) | Everything built during the event: frozen contracts (`contracts.ts`), the propose-only agent loop (`agent/`), domain prompts and read tools (`domain/`), the detector (`jobs/missing-handover.ts`), provider fallback (`model/`), the write boundary and workspace adapters (`boundary/`), proposal store (`approval/`), evals with a scripted model and a 15-case golden set (`evals/`). |
+| [`apps/channel/`](apps/channel/) | The Slack surface on CopilotKit Channels. `silentops-channel.tsx` (mention → watch, detector loop, approval card, Approve → `approveAndExecute`), `inbound-slack.ts` (Slack message → `InboundEvent`, the agent never sees the raw payload), `server.ts`. The kit's incident demo files remain untouched for reference. |
+| [`SILENTOPS.md`](SILENTOPS.md) | Product specification: thesis, Tier 0, context contract, guardrails, evals, non-goals, video story. |
+| [`SUBMISSION.md`](SUBMISSION.md) | What was inherited vs built, and the evidence checklist. |
+| [`ESTADO.md`](ESTADO.md) · [`team-docs/`](team-docs/) | Team status by gate, contracts between roles, per-role briefs, the verified Ambiguous tool mapping. |
+| [`fixes/backend-r2.md`](fixes/backend-r2.md) | Backend findings log: open issues by severity, discarded ones, closed ones with commits, and the verification record against the live workspace. |
+| `hackathon-*.md`, `using-sponsor-tools.md`, `dev-docs/` | Inherited from the starter kit. |
 
-![Agents, Everywhere hackathon — OpenAI, CopilotKit, OpenRouter, Exa, Auth0, and Ambiguous AI](assets/banner.png)
+## Quickstart
 
-**Build an agent that belongs where people already work, talk, and live.**
-
-[Overview](#overview) · [Get started](#get-started) · [Templates](#templates) · [Coding agent](#coding-agent) · [Resources](#resources)
-
-</div>
-
-## Overview
-
-Build for **[Agents, Everywhere: Bots, Channels, & More](https://aitinkerers.org/hackathons/global/agents-everywhere)**, the AI Tinkerers global hackathon on **September 12–13, 2026**. Choose your city on the event page for its local schedule. Put an agent inside a conversation, an app, a phone, or a physical environment. Make the context of that place essential to what it can do.
-
-This kit gives you three runnable templates, files to hand to your coding agent, and sponsor setup notes. Pick a user, a problem, and one complete interaction. You can use any stack; you do not need every sponsor or every surface.
-
-Your project and its core functionality must be created during the event. Existing libraries, templates, and starter code are allowed; describe what you reuse and what you build. Read [the rules](hackathon-rules.md), then follow your city's participant portal for the current deadline and judging criteria.
-
-## Get started
-
-Use Node.js 22+, then clone and install the kit:
+Requirements: Node.js 22+ (`.nvmrc`), npm.
 
 ```bash
-git clone https://github.com/CopilotKit/agents-everywhere-starter-kit.git
-cd agents-everywhere-starter-kit
+git clone https://github.com/FrancoCazal/SilentOps.git
+cd SilentOps
 npm ci
-cp .env.example .env
+cp .env.example .env      # then fill in the variables below
+npm run verify            # typecheck + every test, offline, no credentials
 ```
 
-Choose one template and configure only the credentials it needs. Slack and web use the root install; React Native has its own install under `apps/mobile` because Expo pins its React Native stack separately.
+### Credentials and what each one unlocks
 
-Paste this into your coding agent:
+| Variable | Needed for | Where to get it |
+|---|---|---|
+| `AMBIGUOUS_API_KEY` | The workspace: detector reads, approved writes. Without it every read and write fails loudly; nothing degrades to an empty result. | [Ambiguous AI](https://www.ambiguous.ai/) → your demo workspace → Connect. Setup: [using-sponsor-tools.md](using-sponsor-tools.md#ambiguous-ai). |
+| `OPENAI_API_KEY`, `MODEL` | Primary model provider. | [OpenAI](https://platform.openai.com/api-keys) |
+| `GOOGLE_API_KEY` | Gemini as a provider (`MODEL_PROVIDER=google`, `MODEL=gemini-2.5-flash`); what this build runs on. | [Google AI Studio](https://aistudio.google.com/apikey) |
+| `FALLBACK_PROVIDER`, `FALLBACK_MODEL` | Where a retryable failure hops to (this build: `google` / `gemini-2.5-pro`). `OPENROUTER_API_KEY` enables the cross-vendor hop. | [OpenRouter](https://openrouter.ai/keys) |
+| `INTELLIGENCE_API_KEY`, `CHANNEL_CODE` | Slack, through a managed CopilotKit Channel. No public URL or tunnel is needed: Intelligence dials this process over an outbound websocket. | `npm run channel:setup -- --no-clipboard` and follow the printed prompt. |
+| `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` | Scope check on every write action (RS256 API with permissions `write:workspace`, `send:channel`, `schedule:job`, granted to a Machine to Machine application). | [Auth0](https://manage.auth0.com/). Setup: [using-sponsor-tools.md](using-sponsor-tools.md#auth0). |
+| `ALLOW_UNVERIFIED_WRITES=1` | **Development only.** Lets writes through without Auth0. Every execution logs `AUTH0 BYPASS` and every action logs `verified: false`; it is never silent. | — |
+| `SILENTOPS_DEMO_AT` | Freezes "now" so the detector meets the shift boundary at any time of day, e.g. `2026-09-12T05:45:00-03:00`. | — |
+| `FORCE_PROVIDER_FAILURE=1` | Kill switch for the video: the primary provider returns 503 and the run completes on the fallback. | — |
+| `SILENTOPS_DETECT_EVERY_MS`, `LOOP_STATE_DIR`, `AMBIGUOUS_APP_URL`, `PORT`, `LOG_LEVEL` | Detector interval (default 60000), on-disk state directory (default `.data/loop-core`), base URL for document links (default `https://app.ambiguous.ai`), HTTP port, runtime log level. | — |
 
-```text
-Read AGENTS.md, hackathon-overview.md, hackathon-rules.md, and
-using-sponsor-tools.md. Help me choose one template app README for my idea,
-then adapt this checkout into our own project. Ask me who it is for and
-what the agent should do in that setting. Follow this README's CopilotKit
-onboarding section for the selected app; keep its existing infrastructure.
-Use only the integrations the idea needs. Verify a complete interaction and
-prepare SUBMISSION.md, distinguishing inherited code from our event work.
+`npm run first-calls` pings every configured integration and says which one is
+missing. `EXA_API_KEY` and `TRIGGER_SECRET_KEY` are listed by the kit but are
+not used by SilentOps.
+
+### Check the pieces before the demo
+
+```bash
+npm run first-calls                          # which credentials are live
+npm run tools:list -w loop-core              # the workspace's live MCP tool catalog
+SILENTOPS_DEMO_AT=2026-09-12T05:45:00-03:00 npm run silentops:detect -w loop-core
+                                             # the real detector, read-only, no model:
+                                             # expects detected: true, 3 messages, 3 open work orders
+EVAL_MOCK=0 npm run eval -w loop-core        # the 15 golden cases against the real model
 ```
 
-### CopilotKit onboarding
+On PowerShell set variables with `$env:SILENTOPS_DEMO_AT = '2026-09-12T05:45:00-03:00'`.
 
-Use the team's maintained setup prompts in the same coding-agent session, with this checkout as the project root. Choose one app first; setup should adapt that app rather than scaffold a second starter over it.
+### See the approval card without Slack
 
-| Your starting point | Onboarding path |
-|---|---|
-| Slack template | Run `npm run channel:setup -- --no-clipboard`, then have your agent follow the prompt it prints. This installs the current `channels-setup` skill; the command itself does not create a Channel or sign you in. Tell the agent to connect **Slack** using `apps/channel` and read its bundled `build-channels-agent` skill. |
-| Web or React Native template | The existing model-provider setup runs without Intelligence. To add managed conversations with Rich Threads and other Intelligence capabilities, use the prompt below for the chosen app. |
+`npm run preview:card -w channel` renders the card's four states (pending,
+approved, rejected, and the shift where the agent stays silent) as Block Kit
+JSON under `apps/channel/preview/`; paste one into Slack's
+[Block Kit Builder](https://app.slack.com/block-kit-builder) to see it.
 
-**Connect the selected app to CopilotKit Intelligence:**
+### Run it in Slack
 
-```text
-Read AGENTS.md and the selected app README. Connect that app to CopilotKit
-Intelligence using the current official onboarding workflow. This checkout
-already has CopilotKit: preserve the existing app, agent, model provider,
-tools, and approval behavior. For apps/mobile, keep Expo and the separate
-mobile install; its runtime is served by apps/web.
-Generate a fresh 12-character hexadecimal run ID, substitute it for RUN_ID,
-then run from the repository root:
-npx --yes copilotkit@latest onboard start --run RUN_ID
-Follow the instructions returned by the CLI and reuse that ID for this run.
-Show the integration plan before editing, and prove the selected app works
-before and after connecting Intelligence.
+```bash
+npm run dev:slack
 ```
 
-The [official CopilotKit prompt](https://docs.copilotkit.ai/llms.txt) serves new projects, existing apps, and existing CopilotKit integrations. The [docs home](https://docs.copilotkit.ai/) also offers **Copy Prompt**, **Open in Codex**, and **Open in Claude Code**; add the selected template's context when using those entry points. For Slack, use the [Channels onboarding path](https://docs.copilotkit.ai/slack) above. Finish one selected workflow before starting another.
+The server first runs `bootstrapBoundary()`, which registers the real workspace
+reader and writer, enables on-disk persistence, and logs the Auth0 state
+(`configured`, `bypass` or `blocked`). Then:
 
-Follow the CLI's returned instructions for sign-in, project selection, credentials, and verification. Keep credentials out of chat and preserve existing `.env` values. The starter reads `INTELLIGENCE_API_KEY`; if setup provisions `CPK_INTELLIGENCE_API_KEY`, map it to the variable the selected runtime actually reads. Review any required package upgrades together with the tested Channels/runtime pair and `@ag-ui/client` override. Intelligence onboarding changes the app; installing a skill or adding an API key alone does not complete that integration.
+1. Invite the bot to `#operaciones-hub-frio`.
+2. Mention it once: `@silentops vigilá esta guardia`. This **arms the watch** on
+   that thread. The Channels SDK does not yet deliver proactively to a
+   conversation nobody mentioned the bot in, so this one human step is the
+   configuration; the detection itself is the scheduled job.
+3. Wait for the next detector tick (every minute; with `SILENTOPS_DEMO_AT`
+   frozen at 05:45 it fires on the first one). `@silentops detectar` runs the
+   detector immediately as a development smoke test; it is not the product's
+   trigger and is not presented as such.
+4. The card arrives with the absence evidence, the sourced bullets, the
+   reassignments and the risk level. **Approve** executes through the boundary
+   and the card updates with what was done and the document link. A high-risk
+   proposal (for example "close every work order") asks for a second explicit
+   confirmation. **Reject** records the decision and executes nothing.
+5. Replay: run the detector again for the same shift. No second proposal is
+   created, and a second Approve reports every action as already executed.
 
-## Templates
+## What is live, what is sample, what is session-only
 
-These starting points serve different kinds of context. **CopilotKit Channels** brings the Slack agent into the conversation; **CopilotKit React** connects the web agent to the app people are using; **CopilotKit React Native** brings the same agent pattern onto a phone.
+- **Live:** the Ambiguous workspace (documents, tasks, chat, calendar) over MCP;
+  the model providers; Slack through CopilotKit Intelligence; Auth0 when
+  configured.
+- **Synthetic:** every record in the demo workspace (one operations channel,
+  two shifts, three open work orders, a prior handover, a rules document, no
+  handover for the night shift). No real people, phone numbers, customers,
+  asset identifiers, temperature thresholds or safety statements.
+- **On disk, per process:** proposals and idempotency keys in
+  `LOOP_STATE_DIR`. Scheduled follow-ups (`job.schedule`) run in-process and are
+  not durable; Tier 0 does not depend on them.
 
-### 1. Slack — an agent that joins the thread
+## Verified so far
 
-**OpenAI + CopilotKit Channels + Exa**
+Reproducible with the commands above, against the live workspace and without a
+model: the detector finds the absence and preserves the evidence; an approved
+write lands as a document with its sources (a bullet without a source is
+dropped and logged); replaying the same approved proposal executes nothing and
+sends nothing; the proposal and idempotency state are on disk. The negative
+case (the handover exists, so the detector does not fire) is covered by the
+detector's tests; running it live means creating and then permanently deleting
+a handover document, because workspace search also returns trashed documents.
+The full record, including open issues and their owners, is in
+[`fixes/backend-r2.md`](fixes/backend-r2.md).
 
-An agent reads what people already said, researches with Exa, and answers in the same thread with native cards and source links. Start with a support conversation, a research discussion, or a team decision.
+## Inherited vs built
 
-The included Slack app supplies thread history, subscriptions, search, and Channels UI. Configure your model, Exa, and a managed Channel, then run `npm run dev:slack`. No public tunnel is needed. Teams or other chat platforms can use the same Channels pattern, but this starter ships the Slack app.
+The repository started from the CopilotKit
+[`agents-everywhere-starter-kit`](https://github.com/CopilotKit/agents-everywhere-starter-kit)
+at commit `86f547d`, which is part of this history, so the boundary is auditable
+with `git diff 86f547d..HEAD`. We use its monorepo toolchain, the Channels host,
+provider resolution and the sponsor notes unmodified. Everything under
+`packages/loop-core/`, the SilentOps files in `apps/channel/src/`, and the
+project documents were created during the event. Details and the eligibility
+checklist: [SUBMISSION.md](SUBMISSION.md).
 
-**[Use the Slack template →](apps/channel/)**
-
-### 2. Web — an agent inside your app
-
-**OpenAI + CopilotKit React + Ambiguous AI**
-
-An agent sees the page you are on and turns a request into a real workplace record you can still find after a refresh. Adapt it to customer follow-ups, a project workspace, or a personal planning app.
-
-The included web app supplies page context, frontend tools, agent-rendered UI, and a browser approval step. Connect an Ambiguous AI workspace, then run `npm run dev:web`; approved follow-ups are saved through the server and can be read back after refresh.
-
-**[Use the web template →](apps/web/)**
-
-### 3. React Native — an agent in your pocket
-
-**OpenAI or OpenRouter + CopilotKit React Native**
-
-A mobile agent reads app state, renders native cards, and waits for a tap before changing local sample data. Start with a personal finance assistant, a field checklist, an inventory counter, or any workflow where phone context and approval matter.
-
-The included Expo app supplies seeded finance state, native rendered tool UI, a human-in-the-loop expense approval, and a mobile-specific CopilotKit runtime endpoint served by the web app. Configure your model provider, start `npm run dev:web`, then run the mobile app from `apps/mobile`.
-
-**[Use the React Native template →](apps/mobile/)**
-
-### Make the demo yours
-
-The supplied on-call and finance assistants are **infrastructure examples**: read ambient context, call a tool, render useful UI, and return a verifiable result. Choose a different user, problem, dataset, and interaction; the goal is your own project, not another version of the starter scenario.
-
-Use the [demo prompts](dev-docs/demo-prompts.md) to learn how the pieces connect, then replace the sample domain. In the Slack sample incident flow, approval cards record decisions without executing production actions. In the web follow-up flow, the page approval button saves the reviewed Ambiguous task. In the mobile finance flow, approval changes local in-memory sample data. Enforce the same kind of write boundary around any external action you add.
-
-Want another surface pattern? The web app also includes a voice route, and the shared agent can connect to remote MCP tools when configured. The event surfaces are inspiration, not separate tracks or a requirement to build multiple apps.
-
-## Coding agent
-
-Give your agent these files before it starts coding:
-
-| File | What it provides |
-|---|---|
-| [hackathon-overview.md](hackathon-overview.md) | The challenge, four surfaces, and official judging criteria |
-| [hackathon-rules.md](hackathon-rules.md) | Build eligibility, inherited code, and required deliverables |
-| [using-sponsor-tools.md](using-sponsor-tools.md) | Every sponsor featured in this kit: access, authentication, configuration, and a first working call |
-| [AGENTS.md](AGENTS.md) | Repository conventions and verification commands |
-| [Channels skill](.agents/skills/build-channels-agent/SKILL.md) | Verified Channels APIs for the Slack template |
-
-The app READMEs provide launch commands, files to customize, and a concrete result to check. Start with one template and add a second surface only if it helps your user.
-
-## Resources
-
-| Need | Go here |
-|---|---|
-| Event details, deadline, and judging | [Find your city](https://aitinkerers.org/hackathons/global/agents-everywhere), then open its participant portal and handbook |
-| OpenAI agent development | [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/) |
-| OpenRouter access and model choice | [Quickstart](https://openrouter.ai/docs/quickstart) · [Keys](https://openrouter.ai/keys) · [Model catalog](https://openrouter.ai/models) · [Model switching](dev-docs/model-switching.md) |
-| CopilotKit app development | [Docs](https://docs.copilotkit.ai/) · [Tools and context](dev-docs/tools-and-context.md) · [Discord channel for technical questions](https://discord.com/channels/1122926057641742418/1548038338848489532) |
-| CopilotKit Channels | [Channels guide](https://copilotkit.ai/channels-guide.md) · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [OpenTag example app](https://github.com/CopilotKit/OpenTag) |
-| Exa quickstart | [Search API guide](https://exa.ai/docs/reference/search-api-guide) · [Kit setup](using-sponsor-tools.md#exa) |
-| Auth0 API authorization | [Node API](https://auth0.com/docs/quickstart/backend/nodejs) · [Kit setup](using-sponsor-tools.md#auth0) |
-| Ambiguous AI quickstart | [Developer guide](https://www.ambiguous.ai/llms.txt) · [Kit setup](using-sponsor-tools.md#ambiguous-ai) |
-| Rehearse and debug | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md) |
-| Prepare your entry | [Submission checklist](SUBMISSION.md) |
-
-For credit redemption instructions, choose your city on the [global event page](https://aitinkerers.org/hackathons/global/agents-everywhere) and check its participant portal's **Credits & Offers** section.
-
-For technical questions during the event, check your city's participant portal and ask your local organizers.
-
-For the Slack/web workspaces, `npm run verify` runs typechecks and offline tests without credentials. The mobile app has its own install, tests, typecheck, and Metro export checks under `apps/mobile`. Each app reports missing configuration when the relevant integration is used. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.
+![Agents, Everywhere hackathon — OpenAI, CopilotKit, OpenRouter, Exa, Auth0, and Ambiguous AI](assets/banner.png)

@@ -89,9 +89,14 @@ credentials, including the 15 golden cases **against a scripted model**.
 `npm run silentops:detect -w loop-core` runs the
 detector against the live Ambiguous workspace, read-only.
 
-**The honest split between offline and live.** The 200 offline tests pass, and
-the detector and the full read path have run against the live Ambiguous
-workspace (`detected: true`, `matches: []`, 3 messages, 3 open work orders). The
+**The honest split between offline and live.** The 296 offline tests pass
+(`npm run verify`), and the **whole loop has run against the live Ambiguous
+workspace with a live model**: `npm run silentops:rehearse -w loop-core`
+(Gemini 2.5 Flash) detected the absence (`detected: true`, `matches: []`,
+3 messages, 3 open work orders), proposed the handover and three reassignments,
+created the document (with its URL) and updated the three work orders through
+the write boundary, read them back, replayed the same approval with every action
+skipped, and restored the workspace. Recorded in `fixes/backend-r2.md`. The
 same 15 golden cases run against the live model (`EVAL_MOCK=0`, Gemini
 `gemini-2.5-flash`) currently pass **5 of 15**, and that work is in progress: the
 model does not yet emit the `channel.send` step, and two adversarial cases
@@ -153,31 +158,39 @@ approved by the technician leaving the floor.
 - **Auth0** — the scope gate in front of every write. `boundary/write.ts` calls
   `verifyScope` for the action's scope (`write:workspace`, `send:channel`,
   `schedule:job`) before dispatching, and pairs it with an idempotency key.
-  **No Auth0 tenant is wired in this build:** the submitted `.env` sets
-  `ALLOW_UNVERIFIED_WRITES=1`, the explicit bypass. The gate fails closed
-  without it — covered by the test *"sin Auth0 configurado y sin bypass
-  explicito, no escribe nada"* — but we do not claim a live tenant we did not
-  provision.
+  A live Auth0 tenant is wired: the service fetches a machine-to-machine token
+  (client credentials, RS256) and `verifyScope` checks signature, issuer,
+  audience and the scope of every action. Verified live: a token **without**
+  the scope is refused before any write (`missing scope write:workspace`, nothing
+  executed), and with `ALLOW_UNVERIFIED_WRITES=1` the bypass is logged on every
+  execution (`AUTH0 BYPASS`, `verified: false`), never silent. The positive path
+  depends on the three permissions being granted to the application in the
+  tenant; the video states which mode it was recorded in.
 - **Google Gemini** — the model actually running this build
   (`MODEL_PROVIDER=google`, `MODEL=gemini-2.5-flash`). Every model call goes
   through `withFallback`, which re-resolves against a second provider on a
   retryable error.
-- **OpenAI / OpenRouter** — supported providers of that same fallback, and the
-  pairing its 10 hermetic tests exercise. **Neither key is present in the
-  submitted build**, so with one provider configured there is no second hop to
-  demonstrate: `FORCE_PROVIDER_FAILURE=1` fails the primary and then reports the
-  missing key rather than completing the run. The cross-provider path is
-  implemented and tested, not demonstrated live here.
+- **OpenAI / OpenRouter** — supported providers of the same fallback, and the
+  pairing its hermetic tests exercise. In the submitted build the fallback is a
+  **second model within Google** (`FALLBACK_PROVIDER=google`,
+  `FALLBACK_MODEL=gemini-2.5-pro`): OpenRouter was down and the OpenAI
+  organisation had no credit during the event. Verified live with
+  `FORCE_PROVIDER_FAILURE=1`: the primary fails with a simulated 503, the log
+  shows `primary provider failed, switching provider` and the same run
+  completes on the fallback with the full proposal. With an OpenAI or
+  OpenRouter key present, the same hop crosses vendors.
 
 Sponsor count is not a judging criterion; each tool above carries a distinct,
 visible part of the one workflow. Where a sponsor's integration is implemented
 but not provisioned, we say so rather than implying it ran.
 
 **Scheduling — labelled accurately.** The detector is a deterministic scheduled
-job, and that schedule is the product's trigger. It runs today through
-`packages/loop-core/src/jobs/followup.ts`, an **in-process** scheduler that
-reports `durable: false`, plus the reproducible manual run
-`npm run silentops:detect -w loop-core`. **Trigger.dev is not installed in this
+job, and that schedule is the product's trigger. It runs today as an **in-process** loop in the Slack service
+(`startDetectorLoop()` in `apps/channel/src/silentops-channel.tsx`, every
+`SILENTOPS_DETECT_EVERY_MS`, deduplicated per shift event), plus the
+reproducible manual runs `npm run silentops:detect -w loop-core` (read-only) and
+`npm run silentops:rehearse -w loop-core` (the full loop). Follow-up jobs
+(`job.schedule`) use `jobs/followup.ts`, which reports `durable: false`. **Trigger.dev is not installed in this
 build.** The `JobScheduler` interface exists so it can be swapped in without
 touching the boundary, but we do not claim a durable managed cron we did not
 wire, and the video must not imply one.
@@ -193,7 +206,11 @@ Judges score each of the four official criteria from 1–5. This checklist helps
 | Technical Execution & Integration | Show how tools, data, and the environment connect. Demonstrate a relevant failure or cancellation path and explain recovery, state persistence, and integration limits. |
 | Usefulness & Agentic Experience | Identify the user and problem, show a meaningful action in the surface, and demonstrate clear feedback and appropriate user control. Explain what work the agent saves. |
 
-- [ ] We can point to visible evidence for every criterion
+- [x] We can point to visible evidence for every criterion:
+  - *Core requirements:* the live loop above (detector → proposal → approval → document and work orders in Ambiguous → replay skipped), reproducible with `npm run silentops:rehearse -w loop-core`.
+  - *Innovation & theme:* the trigger is an absence found by a scheduled detector, not a message; the card shows the search verbatim (`… -> 0 results`); a chatbox cannot wake at the shift boundary.
+  - *Technical execution:* one write boundary (`boundary/write.ts`) with Auth0 scope per action and persisted idempotency; domain intents mapped to provider tools in one adapter; unsourced bullets dropped; failure paths: scope refused, provider failure → fallback, duplicate replay → skipped.
+  - *Usefulness & control:* the outgoing supervisor approves or rejects in the channel; high-risk proposals need a second explicit confirmation; a failed execution offers a retry that never duplicates.
 - [x] We distinguish live services, sample data, session-only state, and standalone recipes
 - [x] Sponsor technologies contribute to the workflow; their count is not a judging criterion
 
