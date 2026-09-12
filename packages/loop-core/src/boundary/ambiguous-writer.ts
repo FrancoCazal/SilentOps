@@ -78,7 +78,21 @@ export class WriteNotAllowedError extends Error {
 }
 
 export function createAmbiguousWorkspaceWriter(options: WriterOptions = {}): WorkspaceExecutor {
-  const call = options.call ?? ambiguousExecutor;
+  const execute = options.call ?? ambiguousExecutor;
+  // MCP puede resolver la Promise con isError: true. Ningun camino de
+  // escritura debe informar exito ni llegar a remember con esa respuesta.
+  const call: WriteCall = async (tool, args) => {
+    const result = await execute(tool, args);
+    if (isRecord(result) && result.isError === true) {
+      const detail = Array.isArray(result.content)
+        ? result.content.filter(isRecord)
+          .filter((item) => item.type === "text")
+          .map((item) => str(item.text) ?? "").filter(Boolean).join("\n")
+        : "";
+      throw new Error(`Ambiguous rechazo ${tool}${detail ? `: ${detail}` : " (isError: true)"}`);
+    }
+    return result;
+  };
   const read = options.read ?? callReadTool;
   const log = options.log ?? (() => {});
   const now = options.now ?? (() => new Date());
@@ -146,7 +160,11 @@ async function createHandover(args: Record<string, unknown>, d: Deps): Promise<u
     labels: ["silentops", "handover"],
   });
   const doc = unwrap(result);
-  const documentId = str(doc?.id);
+  const documentId = str(doc?.id)?.trim();
+  if (!documentId) {
+    d.log("handover creation unconfirmed", { title, reason: "missing documentId" });
+    throw new Error("create_document no devolvio un id valido; creacion no confirmada");
+  }
   // create_document y get_document no traen URL; search_workspace si. Es una
   // lectura mas, y es lo que va al aviso de Slack (F-05).
   const url = str(doc?.url) ?? (documentId ? await findDocumentUrl(documentId, title, d.read, d.log) : undefined);
