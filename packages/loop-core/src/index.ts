@@ -3,8 +3,18 @@ export * from "./contracts";
 export { handleEvent, buildProposal, renderEvent, PROPOSE_ACTION } from "./agent";
 export { registerOutbound, outbound, registeredOutboundNames } from "./channels/outbound";
 export { systemPrompt, DOMAIN_BRIEF } from "./domain/prompts";
-export { readOnlyTools, toolDefinitions, handlerFor } from "./domain/tools";
+export { readOnlyTools, toolDefinitions, handlerFor, TOOLS } from "./domain/tools";
 export type { AgentTool, DomainTool, ToolHandler } from "./domain/tools";
+export {
+  readTool,
+  registerWorkspaceReader,
+  isWorkspaceReaderRegistered,
+  resetWorkspaceReader,
+  fixtureReader,
+} from "./domain/workspace-reader";
+export type { WorkspaceReader } from "./domain/workspace-reader";
+export { detectMissingHandover, minutesUntil, localDateKey } from "./jobs/missing-handover";
+export type { Shift, DetectOptions } from "./jobs/missing-handover";
 export {
   executeApproved,
   registerWorkspaceExecutor,
@@ -21,7 +31,7 @@ export type { ModelRef, ProviderName, Attempt } from "./model/with-fallback";
 export { log, newRunId, loggerFor } from "./observability/log";
 export type { Logger } from "./observability/log";
 export { inProcessScheduler, dueJobs, pendingJobs } from "./jobs/followup";
-export { readTool, setWorkplaceClientForTests } from "./boundary/workplace-mcp";
+export { callReadTool, setWorkplaceClientForTests } from "./boundary/workplace-mcp";
 export { fileIdempotencyStore, fileProposalStore, defaultStatePaths } from "./boundary/file-store";
 export { approveAndExecute, rejectProposal, HighRiskError, NotApprovedError } from "./boundary/write";
 export { bootstrapBoundary } from "./boundary/bootstrap";

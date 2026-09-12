@@ -108,7 +108,13 @@ function toolErrorText(tool: string, content: CallToolContent): string {
   return text || `La tool MCP ${tool} devolvio un error`;
 }
 
-export async function readTool(tool: string, args: Record<string, unknown>): Promise<unknown> {
+/**
+ * Lectura CRUDA por MCP: llama la tool exacta y desenvuelve el resultado.
+ * No confundir con `readTool` de domain/workspace-reader (el puerto que
+ * consumen el detector y las tools); ese recibe intenciones `silentops.*` y
+ * lo implementa boundary/ambiguous-reader.ts. Este es el escalon de abajo.
+ */
+export async function callReadTool(tool: string, args: Record<string, unknown>): Promise<unknown> {
   const c = await workplaceClient();
   const result = await invalidateOnTransient(c, () =>
     c.callTool({ name: tool, arguments: args }, undefined, { timeout: 30_000 }),

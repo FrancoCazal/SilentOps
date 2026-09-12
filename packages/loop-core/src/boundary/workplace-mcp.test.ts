@@ -4,7 +4,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   ambiguousExecutor,
   listWorkplaceTools,
-  readTool,
+  callReadTool,
   setWorkplaceClientForTests,
   type WorkplaceClient,
 } from "./workplace-mcp";
@@ -52,7 +52,7 @@ describe("workplace MCP", () => {
       }),
     );
 
-    const result = await readTool("fixture.search", { query: "handover" });
+    const result = await callReadTool("fixture.search", { query: "handover" });
 
     assert.deepEqual(result, { matches: [] });
     assert.deepEqual(received, [
@@ -73,7 +73,7 @@ describe("workplace MCP", () => {
       }),
     );
 
-    await assert.rejects(() => readTool("fixture.read", {}), /AMBIGUOUS_API_KEY no configurado/);
+    await assert.rejects(() => callReadTool("fixture.read", {}), /AMBIGUOUS_API_KEY no configurado/);
     assert.equal(calls, 0);
   });
 
@@ -89,7 +89,7 @@ describe("workplace MCP", () => {
       }),
     );
 
-    await assert.rejects(() => readTool("fixture.read", {}), /AMBIGUOUS_API_KEY no configurado/);
+    await assert.rejects(() => callReadTool("fixture.read", {}), /AMBIGUOUS_API_KEY no configurado/);
     assert.equal(calls, 0);
   });
 
@@ -106,7 +106,7 @@ describe("workplace MCP", () => {
       }),
     );
 
-    assert.deepEqual(await readTool("fixture.read", {}), { records: [{ id: "record-1" }] });
+    assert.deepEqual(await callReadTool("fixture.read", {}), { records: [{ id: "record-1" }] });
   });
 
   it("returns content when a single text block is not JSON", async () => {
@@ -114,7 +114,7 @@ describe("workplace MCP", () => {
     const content = [{ type: "text" as const, text: "plain text" }];
     setWorkplaceClientForTests(fakeClient({ async callTool() { return { content }; } }));
 
-    assert.deepEqual(await readTool("fixture.read", {}), content);
+    assert.deepEqual(await callReadTool("fixture.read", {}), content);
   });
 
   it("returns all content blocks when the result has more than one", async () => {
@@ -125,7 +125,7 @@ describe("workplace MCP", () => {
     ];
     setWorkplaceClientForTests(fakeClient({ async callTool() { return { content }; } }));
 
-    assert.deepEqual(await readTool("fixture.read", {}), content);
+    assert.deepEqual(await callReadTool("fixture.read", {}), content);
   });
 
   it("throws the MCP error text when the tool reports isError", async () => {
@@ -138,7 +138,7 @@ describe("workplace MCP", () => {
       }),
     );
 
-    await assert.rejects(() => readTool("fixture.read", {}), /document query failed/);
+    await assert.rejects(() => callReadTool("fixture.read", {}), /document query failed/);
   });
 
   it("gives isError priority over an extra toolResult field", async () => {
@@ -155,7 +155,7 @@ describe("workplace MCP", () => {
       }),
     );
 
-    await assert.rejects(() => readTool("fixture.read", {}), /authoritative failure/);
+    await assert.rejects(() => callReadTool("fixture.read", {}), /authoritative failure/);
   });
 
   it("rejects a legacy toolResult-only response instead of returning an ambiguous value", async () => {
@@ -168,7 +168,7 @@ describe("workplace MCP", () => {
       }),
     );
 
-    await assert.rejects(() => readTool("fixture.read", {}), /respuesta sin content/);
+    await assert.rejects(() => callReadTool("fixture.read", {}), /respuesta sin content/);
   });
 
   it("discards the cached client after transient read failures", async (t) => {
@@ -196,8 +196,8 @@ describe("workplace MCP", () => {
           },
         }),
       );
-      await assert.rejects(() => readTool("fixture.read", {}));
-      assert.deepEqual(await readTool("fixture.read", {}), { fresh: true });
+      await assert.rejects(() => callReadTool("fixture.read", {}));
+      assert.deepEqual(await callReadTool("fixture.read", {}), { fresh: true });
     }
     assert.equal(connects, failures.length);
   });
