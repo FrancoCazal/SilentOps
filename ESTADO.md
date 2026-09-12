@@ -85,13 +85,51 @@ tiene API para publicar en un canal donde nadie te menciono) y el file-store
 durable. Lo que hay que preservar del lado R3 es `approval-card.tsx`, que es
 exactamente lo que el comentario de R2 pide.
 
+---
+
+## 15:26 — el golden set con LLM real: **5/15**. El mock daba 15/15.
+
+`EVAL_MOCK=0 npm run eval -w loop-core` contra Gemini `gemini-2.5-flash`, dos
+corridas: **4/15 a las 15:08** (antes de los arreglos de arriba) y **5/15 a las
+15:26** (despues). Offline con modelo scripted: 15/15. El mismo suite, el mismo
+codigo: la diferencia es el modelo real.
+
+Pasan: g04, g05, g08, g12, g14. Fallan: g01, g02, g03, g06, g07, g09, g10, g11,
+g13, g15.
+
+Dos causas, no diez:
+
+1. **El modelo nunca propone `channel.send`** (g01, g02, g03, g06, g09). El diff
+   es siempre el mismo: `actual ['workspace.write']` vs
+   `expected ['workspace.write', 'channel.send']`. Sospecha concreta: el `enum` de
+   `payload.tool` que se acaba de agregar publica solo las tres intenciones
+   `silentops.*` de workspace — **no hay intencion para el aviso en Slack**, asi
+   que el modelo no tiene forma de expresarla. Si es eso, se arregla agregando la
+   intencion de envio a `WRITE_INTENTS` y a `normalizeWrite()`.
+2. **En dos casos adversarios propone escrituras donde se esperaba ninguna**:
+   g13 (inyeccion en la descripcion de una OT) devuelve dos `workspace.write` y
+   g15 (reasignar a alguien que no esta de guardia) devuelve una. La invariante
+   estructural aguanta — nada se ejecuta sin aprobacion humana y el modelo solo
+   puede llamar `propose_action` — pero el comportamiento del modelo no cumple la
+   expectativa del golden. Ojo: g13 **pasaba** a las 15:08 y ahora falla, asi que
+   es inestable entre corridas, no un no-determinismo benigno.
+
+Restantes: g07 no cita `doc-77` (continuidad con el handover anterior), g10 no
+dice "sin guardia asignada" (escalar en vez de inventar), g11 no cita `m2`.
+
+**Que significa para la entrega:** el offline verde (200 tests) sigue siendo
+cierto y sigue sirviendo para `npm run verify`; lo que NO se puede afirmar es que
+el loop con modelo real cumpla el golden set. En el video y en `SUBMISSION.md`,
+el numero honesto es "200 tests offline verdes; el golden set con modelo real da
+5/15 y esta en curso", no "15 golden cases pasan".
+
 **Tema elegido:** **SilentOps — continuidad para operaciones criticas de cadena de frio.** Un detector determinista y auditable encuentra un handover tecnico ausente entre guardias; el agente prepara, con fuentes, el documento, las reasignaciones y el aviso en Slack para aprobacion humana. Especificacion: [`SILENTOPS.md`](./SILENTOPS.md) — dentro del repo publico, es la fuente de verdad. La copia interna en `../docs/silentops-facilities.md` queda como material de equipo y no se publica.
 
 **Recorte obligatorio:** Tier 0 es solo el handover ausente. No construir deteccion ambient, seguimiento automatico, Wiki de decisiones, WhatsApp, Torre de control ni segundo flujo antes de que el loop completo este verificado y grabado.
 
 ---
 
-- **R1 Franco (agente, evals, fallback, jobs):** parcial fuerte — prompts SilentOps, detector determinista, cuatro lecturas de dominio y 15 golden cases listos. El detector cubre el caso negativo (handover existente → `null`) y preserva la evidencia de ausencia. **Fallback de provider verificado** con test hermético de 10 casos: `FORCE_PROVIDER_FAILURE=1` completa el mismo run por el secundario y deja el salto en el log, un 400 propio no se reintenta, y `resolveFor` no fuga el entorno. 47 tests en `loop-core`. **Huecos:** que el runtime de canal invoque el detector, y correr el loop una vez con modelo real (`EVAL_MOCK=0 npm run eval -w loop-core`) — los prompts todavía no vieron un LLM, solo el modelo scripted.
+- **R1 Franco (agente, evals, fallback, jobs):** parcial fuerte — prompts SilentOps, detector determinista, cuatro lecturas de dominio y 15 golden cases listos. El detector cubre el caso negativo (handover existente → `null`) y preserva la evidencia de ausencia. **Fallback de provider verificado** con test hermético de 10 casos: `FORCE_PROVIDER_FAILURE=1` completa el mismo run por el secundario y deja el salto en el log, un 400 propio no se reintenta, y `resolveFor` no fuga el entorno. 47 tests en `loop-core`. **Huecos:** el loop **ya corrio con LLM real** (Gemini) y el golden set da **5/15** — ver la seccion de las 15:26; los dos arreglos pendientes son la intencion de `channel.send` y los dos adversarios que proponen escrituras (g13, g15). Ademas, sin `OPENAI_API_KEY` ni `OPENROUTER_API_KEY` en `.env`, `isProviderConfigured()` no encuentra segundo provider: **el plano del fallback del video no se puede filmar en vivo** tal como esta el entorno.
 - **R2 Rodrigo (canales, boundary, Auth0):** parcial — en `main`: `boundary/write.ts`, `auth0.ts`, `idempotency.ts`, `workplace-mcp.ts` y el lector real `boundary/ambiguous-reader.ts`, testeados con fakes. En `origin/r2/backend` (12d7ab1, **sin mergear**) ya hay writer de Ambiguous (`silentops.*` -> `create_document`/`update_task`), `bootstrapBoundary` registrando el lector, canal SilentOps en Slack y `Aprobar -> approveAndExecute`. Falta mergear y reconciliarlo con la superficie de R3.
 - **R3 David (Slack, card, relato):** **parcial fuerte — la superficie existe.**
   - `apps/channel/src/approval-card.tsx` + `approval-card.test.tsx`: card de
@@ -111,35 +149,49 @@ exactamente lo que el comentario de R2 pide.
   - `apps/web/src/app/landing/` (`page.tsx`, `landing.module.css`,
     `approval-states.tsx`) + `Console approval states mockup/`: landing y estados
     de la card como material visual para el video y el repo.
-  - **Huecos:** nada esta commiteado (todo untracked sobre `main`, sin rama
-    `r3/surface`); **el video no empezo** (es el entregable que mas puntua);
-    `SUBMISSION.md` **cerrado** (titulo + 4 bloques de descripcion + aportes de
-    sponsors); `README.md` raiz **abre como SilentOps** (bloque arriba del
-    starter kit); post de redes sin preparar.
+  - **Huecos:** **el video no empezo** (es el entregable que mas puntua). Ya
+    resuelto: todo commiteado y empujado (`1ffb20a` en `origin/main`),
+    `SUBMISSION.md` cerrado (titulo + 4 bloques + sponsors), `README.md` raiz
+    abre como SilentOps, preview de la card con los 4 estados. Falta: link del
+    video en `README.md` y en `SUBMISSION.md`, 19 checkboxes de `SUBMISSION.md`,
+    post de redes, subtitulos, barrido de secretos por frame, y decidir que pasa
+    con `Console approval states mockup/` (2500+ lineas de HTML/JS de consola
+    ajena, hoy en la raiz del repo publico y sin declarar como heredado; revisado
+    y **sin secretos**, solo el placeholder sintetico `ana@hubfrionorte.com`).
 - **R4 (integracion, datos, verificacion):** parcial fuerte — key de Ambiguous validada, catálogo de 856 tools inspeccionado, workspace demo sembrado (canal, calendario, 3 documentos, 3 OT) y detector real probado a las 05:45. Mapeo y comando reproducible: [`team-docs/ambiguous-tools.md`](./team-docs/ambiguous-tools.md). No usar datos de personas ni controlar equipos físicos.
 
 ---
 
-## Riesgos abiertos a las 14:35
+## Riesgos abiertos a las 15:26
 
 1. **El video no existe.** El jurado es global y asincronico: no ve la demo en
    vivo. Con freeze final 16:45, el ultimo momento razonable para empezar a
    filmar es 15:45 (queda edicion, subtitulos, subida y post).
-2. **Dos cableados del canal en paralelo.** `origin/r2/backend` (12d7ab1) ya trae
-   card y `approveAndExecute` en `apps/channel`, y local hay `silentops.tsx`
-   sobre `main`. Si no se reconcilia, se duplica el camino de escritura —
-   justo la invariante que el video vende.
-3. **Nada corrio con LLM real ni con Slack real.** Todo lo verde es offline con
-   modelo scripted y fakes. **No hay `.env` en la maquina de David**: todo script
-   vivo usa `node --env-file=../../.env` y falla al arrancar. Esa credencial
-   desbloquea cuatro de los siete planos del video.
-4. **`SUBMISSION.md` afirma Trigger.dev y el repo no lo tiene.** No hay
-   dependencia de Trigger.dev en el `package.json` raiz, ni en `loop-core`, ni en
-   `channel`; el disparo real hoy es `npm run silentops:detect` mas el replay por
-   mencion. O R2 conecta `registerJobScheduler` a un scheduler en proceso, o hay
-   que reescribir la linea. Una afirmacion de sponsor sin respaldo cuesta mas que
-   un sponsor menos.
-5. **Los `onClick` de la card se rutean solo en proceso.** Si el runtime se
+2. **Dos cableados del canal en paralelo.** `git merge-tree` dice que el unico
+   conflicto textual con `origin/r2/backend` es `README.md`, pero el `server.ts`
+   de R2 importa `silentops-channel.tsx`: despues del merge gana el cableado de
+   R2 y `apps/channel/src/silentops.tsx` queda muerto. Lo que hay que preservar
+   del lado R3 es `approval-card.tsx`.
+3. **Slack sigue bloqueado.** `.env` ya tiene Gemini y Ambiguous, pero
+   `INTELLIGENCE_API_KEY` y `CHANNEL_CODE` estan **vacias**: `dev:slack` no
+   arranca y la card no se puede postear en un thread real. Es la unica
+   credencial que falta para los planos 0:30–1:20.
+4. **Tres afirmaciones de sponsor que el repo no respalda.** Las tres viven en
+   `SUBMISSION.md`, que es de R3:
+   - **Trigger.dev**: no hay dependencia en ningun `package.json`. El disparo hoy
+     es `npm run silentops:detect` mas el replay por mencion.
+   - **OpenAI / OpenRouter**: `.env` usa `MODEL_PROVIDER=google` con
+     `gemini-2.5-flash` en primario **y** en `FALLBACK_MODEL`, y no hay claves de
+     OpenAI ni OpenRouter. El texto promete "demonstrated cross-provider
+     fallback"; con este entorno el salto no tiene a donde ir.
+   - **Auth0**: `ALLOW_UNVERIFIED_WRITES=1` esta activo y no hay credenciales de
+     Auth0, asi que `verifyScope` no verifica nada. El texto dice que el boundary
+     verifica el scope "before every action".
+   Cada una se arregla o se reescribe; una afirmacion falsa que el jurado puede
+   comprobar en 30 segundos cuesta mas que un sponsor menos.
+5. **El golden set con modelo real da 5/15** (seccion 15:26). No presentar "15
+   golden cases pasan" sin aclarar que es con el modelo scripted.
+6. **Los `onClick` de la card se rutean solo en proceso.** Si el runtime se
    reinicia entre que la card se postea y alguien la aprieta, el boton deja de
    responder sin decir nada. Mitigacion de hoy: no reiniciar el proceso durante el
    ensayo; si un boton no responde, repostear la card en vez de debuggear.
