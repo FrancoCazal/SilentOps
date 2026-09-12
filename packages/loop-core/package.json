@@ -15,7 +15,9 @@
     "tools:list": "node --env-file=../../.env --import tsx scripts/list-workplace-tools.ts",
     "first-calls": "node --env-file=../../.env --import tsx scripts/first-calls.ts",
     "silentops:detect": "node --env-file=../../.env --import tsx scripts/detect-missing-handover.ts",
-    "silentops:rehearse": "node --env-file=../../.env --import tsx scripts/rehearse-e2e.ts"
+    "silentops:rehearse": "node --env-file=../../.env --import tsx scripts/rehearse-e2e.ts",
+    "silentops:dry-run": "node --env-file=../../.env --import tsx scripts/silentops-dry-run.ts",
+    "auth0:check": "node --env-file=../../.env --import tsx scripts/check-auth0.ts"
   },
   "dependencies": {
     "@copilotkit/runtime": "1.70.3",

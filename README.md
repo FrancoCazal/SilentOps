@@ -13,6 +13,7 @@ written. The agent can only propose; every write crosses one scoped boundary.
 
 Built at the AI Tinkerers **Agents, Everywhere** global hackathon (September
 12–13, 2026) by Club de Programación FIUNA. Product spec: [SILENTOPS.md](SILENTOPS.md).
+Two-minute demo video: _(add link before submission)_.
 
 ## What the demo shows
 
@@ -134,6 +135,13 @@ EVAL_MOCK=0 npm run eval -w loop-core        # the 15 golden cases against the r
 ```
 
 On PowerShell set variables with `$env:SILENTOPS_DEMO_AT = '2026-09-12T05:45:00-03:00'`.
+
+### See the approval card without Slack
+
+`npm run preview:card -w channel` renders the card's four states (pending,
+approved, rejected, and the shift where the agent stays silent) as Block Kit
+JSON under `apps/channel/preview/`; paste one into Slack's
+[Block Kit Builder](https://app.slack.com/block-kit-builder) to see it.
 
 ### Run it in Slack
 

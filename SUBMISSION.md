@@ -81,17 +81,84 @@ detector against the live Ambiguous workspace, read-only.
 
 ## Title and description
 
+**Title:** SilentOps — continuity for critical cold-chain operations
+
 **What you built**
-<!-- Explain the complete interaction your demo shows. -->
+
+An operational-continuity agent that lives in a refrigerated logistics hub's
+operations Slack channel and catches the handover nobody wrote. Fifteen minutes
+before the night shift ends, a deterministic detector reads the on-call roster,
+searches the workspace for the handover document that should exist, and records
+the result. When that search comes back empty, the agent reads the channel since
+shift start and the open work orders, and drafts a proposal: a sourced handover
+document (at most five bullets, each citing the channel message or work order it
+came from), the open work to reassign to the incoming technician, and the exact
+Slack message to post. The outgoing supervisor sees the absence evidence first,
+then the proposal, and taps Approve. Only then does the single write boundary
+create the document, reassign the approved work orders, and post the link.
+Nothing is written before that tap.
 
 **Who it is for**
-<!-- Name a person in a concrete situation. -->
+
+Ana, the supervisor closing the night shift at a cold-chain logistics hub. She
+coordinates technicians, cold rooms, maintenance work orders and
+customer-impacting incidents, and at 06:00 she hands the floor to Bruno. The
+handover is the one task most easily lost precisely when the shift was busy —
+and its absence is invisible until something falls through it.
 
 **Why the context matters**
-<!-- What did the agent know or do because it lived in this surface? -->
+
+The trigger is not a human message — it is an absence. Nobody asked SilentOps
+anything; a scheduled job woke at the shift boundary, queried for a record that
+did not exist, and preserved the proof (`searched Documents for "Handover Noche
+2026-09-12" at 05:45 → 0 results`). A standalone chatbox cannot wake at the
+expected shift boundary, query for the record that should exist, and preserve
+that chain of evidence — it can only answer when spoken to. Living in the
+operations channel is also what makes the control natural: the person approving
+is the person going off shift, and the approval is the exit signature they were
+already making. The agent has no write access; everything the demo shows was
+approved by the technician leaving the floor.
 
 **Sponsor technologies used**
-<!-- Name the tools you actually used and the visible contribution of each. -->
+
+- **CopilotKit Channels** — the Slack surface. The approval card renders the
+  absence evidence and the proposal as native Block Kit, and its Approve button
+  is the only path to a write.
+- **Ambiguous AI** — the system of record, over MCP. Shifts, documents and work
+  orders are read to build the proposal and written back on approval; the
+  read-only adapter is the only module that knows the provider's tool names, so
+  the model can never name a write tool.
+- **Auth0** — the scope gate in front of every write. `boundary/write.ts` calls
+  `verifyScope` for the action's scope (`write:workspace`, `send:channel`,
+  `schedule:job`) before dispatching, and pairs it with an idempotency key.
+  **No Auth0 tenant is wired in this build:** the submitted `.env` sets
+  `ALLOW_UNVERIFIED_WRITES=1`, the explicit bypass. The gate fails closed
+  without it — covered by the test *"sin Auth0 configurado y sin bypass
+  explicito, no escribe nada"* — but we do not claim a live tenant we did not
+  provision.
+- **Google Gemini** — the model actually running this build
+  (`MODEL_PROVIDER=google`, `MODEL=gemini-2.5-flash`). Every model call goes
+  through `withFallback`, which re-resolves against a second provider on a
+  retryable error.
+- **OpenAI / OpenRouter** — supported providers of that same fallback, and the
+  pairing its 10 hermetic tests exercise. **Neither key is present in the
+  submitted build**, so with one provider configured there is no second hop to
+  demonstrate: `FORCE_PROVIDER_FAILURE=1` fails the primary and then reports the
+  missing key rather than completing the run. The cross-provider path is
+  implemented and tested, not demonstrated live here.
+
+Sponsor count is not a judging criterion; each tool above carries a distinct,
+visible part of the one workflow. Where a sponsor's integration is implemented
+but not provisioned, we say so rather than implying it ran.
+
+**Scheduling — labelled accurately.** The detector is a deterministic scheduled
+job, and that schedule is the product's trigger. It runs today through
+`packages/loop-core/src/jobs/followup.ts`, an **in-process** scheduler that
+reports `durable: false`, plus the reproducible manual run
+`npm run silentops:detect -w loop-core`. **Trigger.dev is not installed in this
+build.** The `JobScheduler` interface exists so it can be swapped in without
+touching the boundary, but we do not claim a durable managed cron we did not
+wire, and the video must not imply one.
 
 ## Evidence for the judging criteria
 

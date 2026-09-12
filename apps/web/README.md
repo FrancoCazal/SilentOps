@@ -29,7 +29,12 @@ To use OpenRouter, follow the [shared provider settings](../../using-sponsor-too
 npm run dev:web
 ```
 
-Open `http://127.0.0.1:3100` or `http://localhost:3100` and select an incident. The dev and start scripts bind the credential-backed approval server to loopback by default; keep that boundary unless you add your own authentication and trusted-origin policy.
+Open `http://127.0.0.1:3100` or `http://localhost:3100`. The root route is the
+SilentOps commercial site; the inherited incident sample described below now
+lives at `/kit-demo`, and the voice route is unchanged at `/voice`. Select an
+incident there. The dev and start scripts bind the credential-backed approval
+server to loopback by default; keep that boundary unless you add your own
+authentication and trusted-origin policy.
 
 ## Try the flow
 
@@ -45,7 +50,8 @@ The result should be a retrievable Ambiguous record with the same ID after refre
 
 | Piece | File |
 | --- | --- |
-| App and selected record | [src/app/page.tsx](src/app/page.tsx) and [src/lib/incidents.ts](src/lib/incidents.ts) |
+| SilentOps site | [src/app/page.tsx](src/app/page.tsx) and [src/components/landing/](src/components/landing/) |
+| App and selected record | [src/app/kit-demo/page.tsx](src/app/kit-demo/page.tsx) and [src/lib/incidents.ts](src/lib/incidents.ts) |
 | Context and frontend tools | [src/components/app-control.tsx](src/components/app-control.tsx): `useAgentContext`, `select_incident`, `propose_followup`, `retrieve_followup`, and `refresh_followups` |
 | Approval UI and provider reads | [src/components/workplace-followups.tsx](src/components/workplace-followups.tsx) and [src/lib/use-workplace.ts](src/lib/use-workplace.ts) |
 | Server approval boundary | [src/app/api/followups/route.ts](src/app/api/followups/route.ts) and [src/lib/server/followups.ts](src/lib/server/followups.ts) |

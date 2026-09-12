@@ -1,0 +1,20 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Propuesta rechazada · nada se escribió"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "SilentOps never controls equipment or decides safety. It prepares a sourced handover for the responsible human to approve."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Turno Noche cierra 06:00 · Ana sale, Bruno entra"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "✓ _Aprobado por Ana_ · handover creado"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "3 acción(es) ejecutadas por el boundary · escritura autorizada por humano"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "SilentOps never controls equipment or decides safety. It prepares a sourced handover for the responsible human to approve."
+        }
+      ]
+    }
+  ]
+}

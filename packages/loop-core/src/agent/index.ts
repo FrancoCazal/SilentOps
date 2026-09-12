@@ -10,7 +10,7 @@ import { systemPrompt } from "../domain/prompts";
 import { handlerFor, toolDefinitions, type AgentTool } from "../domain/tools";
 import { withFallback, type ModelRef } from "../model/with-fallback";
 import { loggerFor, newRunId, type Logger } from "../observability/log";
-import { PROPOSE_ACTION } from "./propose-tool";
+import { PROPOSE_ACTION, WRITE_INTENTS } from "./propose-tool";
 import { renderEvent } from "./render";
 
 export type HandleOptions = {
@@ -68,6 +68,23 @@ export async function handleEvent(
     : await withFallback(runWith, log);
 
   const proposal = buildProposal({ runId, evt, raw, ttlMinutes: options.ttlMinutes ?? 10 });
+
+  // Una propuesta con 0 acciones despues de que el modelo SI llamo propose_action
+  // significa que el payload no cumplia el contrato y se descarto en silencio.
+  // Ese silencio cuesta horas de debug: dejar el payload crudo en el log.
+  if (raw.length > 0 && proposal.actions.length < raw.length) {
+    for (const candidate of raw) {
+      if (toAction(candidate) === undefined) {
+        log("propose_action descartada: payload incompleto para su kind", {
+          kind: candidate.kind,
+          summary: candidate.summary,
+          payloadKeys: Object.keys(candidate.payload).join(", "),
+          payload: JSON.stringify(candidate.payload).slice(0, 400),
+        });
+      }
+    }
+  }
+
   log("proposal built", {
     proposalId: proposal.id,
     actions: proposal.actions.length,
@@ -213,14 +230,16 @@ export function buildProposal(input: {
 function toAction(r: RawProposal): ProposedAction | undefined {
   const p = r.payload;
   switch (r.kind) {
-    case "workspace.write":
-      if (typeof p.tool !== "string") return undefined;
+    case "workspace.write": {
+      const write = normalizeWrite(p);
+      if (!write) return undefined;
       return {
         kind: "workspace.write",
-        tool: p.tool,
-        args: (p.args ?? {}) as Record<string, unknown>,
+        tool: write.tool,
+        args: write.args,
         summary: r.summary,
       };
+    }
     case "channel.send":
       if (typeof p.channel !== "string" || typeof p.to !== "string") return undefined;
       return {
@@ -242,8 +261,88 @@ function toAction(r: RawProposal): ProposedAction | undefined {
   }
 }
 
-function highestRisk(risks: Risk[]): Risk {
-  if (risks.includes("high")) return "high";
+/**
+ * Normaliza el payload de un workspace.write a { tool, args }.
+ *
+ * Los modelos aplanan: en vez de `{ tool, args: { id, assignee } }` mandan
+ * `{ order_id, assignee }`. Verificado con Gemini. Antes eso se descartaba en
+ * silencio y la propuesta salia vacia, o sea el producto entero no funcionaba
+ * con un LLM real.
+ *
+ * La tolerancia es acotada a proposito: se clasifica SOLO contra las tres
+ * intenciones del dominio y por los campos que cada una exige. Lo que no
+ * clasifica se descarta (y queda en el log). No se adivina ni se inventa una
+ * tool del proveedor: los nombres de tools MCP siguen viviendo solo en el
+ * boundary.
+ */
+function normalizeWrite(
+  p: Record<string, unknown>,
+): { tool: string; args: Record<string, unknown>; inferred?: string } | undefined {
+  const nested = (p.args ?? {}) as Record<string, unknown>;
+  // Campos sueltos ganan solo si args no los trae: el modelo puede mandar ambos.
+  const flat: Record<string, unknown> = { ...p, ...nested };
+  delete flat.tool;
+  delete flat.args;
+
+  const declared = typeof p.tool === "string" ? p.tool.trim() : "";
+  const known = Object.values(WRITE_INTENTS) as string[];
+  if (declared) {
+    // Un nombre declarado se respeta tal cual, sea una intencion del dominio o
+    // no. Decidir si una tool se puede ejecutar NO es trabajo de esta capa: lo
+    // valida el boundary contra el catalogo vivo (invariante 2). Duplicar ese
+    // juicio aca solo crea dos politicas que se contradicen.
+    return {
+      tool: declared,
+      args: hasKeys(nested) ? nested : flat,
+      inferred: known.includes(declared) ? undefined : "declared-passthrough",
+    };
+  }
+
+  // Sin `tool`, el modelo aplano el payload. Clasificar contra las tres
+  // intenciones del dominio por los campos que cada una exige.
+  const id = firstString(flat, ["id", "key", "workOrder", "order_id", "task_id", "task_key"]);
+  const assignee = firstString(flat, ["assignee", "assignee_id", "to"]);
+  const note = firstString(flat, ["note", "comment"]);
+  const title = firstString(flat, ["title", "document_name", "name"]);
+
+  if (id && assignee) {
+    return {
+      tool: WRITE_INTENTS.reassignWorkOrder,
+      args: { ...flat, id, assignee },
+      inferred: "flattened",
+    };
+  }
+  if (id && note) {
+    return {
+      tool: WRITE_INTENTS.annotateWorkOrder,
+      args: { ...flat, id, note },
+      inferred: "flattened",
+    };
+  }
+  if (title && (Array.isArray(flat.bullets) || typeof flat.content === "string")) {
+    return {
+      tool: WRITE_INTENTS.createHandover,
+      args: { ...flat, title },
+      inferred: "flattened",
+    };
+  }
+
+  return undefined;
+}
+
+function hasKeys(o: Record<string, unknown>): boolean {
+  return Object.keys(o).length > 0;
+}
+
+function firstString(o: Record<string, unknown>, keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = o[key];
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return undefined;
+}
+
+function highestRisk(risks: Risk[]): Risk {  if (risks.includes("high")) return "high";
   if (risks.includes("medium")) return "medium";
   return risks.length ? "low" : "low";
 }

@@ -13,6 +13,11 @@ export {
   fixtureReader,
 } from "./domain/workspace-reader";
 export type { WorkspaceReader } from "./domain/workspace-reader";
+export {
+  createAmbiguousWorkspaceReader,
+  AMBIGUOUS_READ_TOOLS,
+} from "./boundary/ambiguous-reader";
+export type { AmbiguousReaderOptions, WorkplaceReadCall } from "./boundary/ambiguous-reader";
 export { detectMissingHandover, minutesUntil, localDateKey } from "./jobs/missing-handover";
 export type { Shift, DetectOptions } from "./jobs/missing-handover";
 export {

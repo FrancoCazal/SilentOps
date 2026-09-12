@@ -1,0 +1,112 @@
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Turno Noche cierra 06:00 · Ana sale, Bruno entra"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Hub Frío Norte · 12 sep 2026"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "_Evidencia de ausencia_\n`⌕ searched Documents for \"Handover Noche 2026-09-12\" at 05:45 → 0 results`"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Propuesta · riesgo medio"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Ana cierra turno con 3 órdenes abiertas y sin handover; preparo el documento y las reasigno a Bruno."
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "_Evidencia_\n• Cámara 3: alerta de temperatura ya escalada por técnico a las 02:10  <https://demo.local/canal/msg/2010|↗ mensaje>\n• Generador de respaldo: chequeo pendiente del turno anterior  <https://demo.local/wo/1043|↗ orden>\n• Sensor del muelle de carga: seguimiento abierto, sin cerrar  <https://demo.local/wo/1051|↗ orden>"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "_Órdenes que se reasignan a Bruno:_\n• `#WO-1042` Inspección cámara fría  <https://demo.local/wo/1042|↗ fuente>\n• `#WO-1043` Chequeo generador  <https://demo.local/wo/1043|↗ fuente>\n• `#WO-1051` Sensor muelle de carga  <https://demo.local/wo/1051|↗ fuente>"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "3 acción(es) al aprobar · cada escritura cruza el boundary (scope Auth0 + idempotencia)"
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "\"approve\"",
+          "text": {
+            "type": "plain_text",
+            "text": "Aprobar"
+          },
+          "value": "\"approve\"",
+          "style": "primary"
+        },
+        {
+          "type": "button",
+          "action_id": "\"reject\"",
+          "text": {
+            "type": "plain_text",
+            "text": "Rechazar"
+          },
+          "value": "\"reject\"",
+          "style": "danger"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "aprueba Ana · firma de salida · válida hasta 06:30"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "SilentOps never controls equipment or decides safety. It prepares a sourced handover for the responsible human to approve."
+        }
+      ]
+    }
+  ]
+}
