@@ -90,6 +90,7 @@ Formato: hora local · comando · resultado · qué prueba.
 | 15:50 | Revisión de Codex sobre `9f67a7c` (`fixes/revision-2026-09-12.md`, 14 hallazgos) | 287 pass / 1 skip. Triage: #1-#2 = F-06; #3-#4 = F-26; #5 = F-22 ✅; #6 = F-07; #7 = F-18 (R1); #8 = arquitectura; #9 = F-27; #10 = cobertura; #11 = docs; #12 = F-23; #13 = F-24 ✅; #14 = F-25 ✅ | Tres bugs reales de R2 corregidos en el acto. |
 | 15:40 | `npm run silentops:rehearse -w loop-core` sobre el árbol mergeado, Auth0 real configurado | Propuesta OK (handover + 3 reasignaciones); paso 5 `FALLA: missing scope write:workspace`; nada escrito; workspace restaurado | El boundary con Auth0 real rechaza mientras los permisos no estén tildados (F-06). |
 | 15:43 | ídem con `AUTH0_DOMAIN=""` (bypass visible en el log), tras agregar el reintento | **9/9 OK** sobre el árbol mergeado: doc `a1edff20…` creado con URL, OT-241/242/243 reasignadas y verificadas, reenvío 4/4 `skipped`, purga y restauración OK | **Producto funcional de punta a punta con lo de todo el equipo mergeado.** Dos corridas previas dieron respuesta vacía del modelo (F-28). |
+| 15:55 | `FORCE_PROVIDER_FAILURE=1 … --dry` con `FALLBACK_MODEL=gemini-3.5-flash` / `gemini-2.5-pro` / `gemini-2.5-flash-lite` | 3.5-flash: salta bien pero 0 acciones (dos veces); **2.5-pro: salta y produce las 4 acciones, exit 0**; flash-lite: error del modelo (exit 3) | Camino de falla verificado en vivo. `.env`: `FALLBACK_MODEL=gemini-2.5-pro`. |
 
 ## 5. Checklist del run end to end real
 

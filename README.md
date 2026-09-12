@@ -76,7 +76,9 @@ Four invariants hold by construction, not by prompt:
   source, caps bullets at five, refuses tools outside a short allowlist or
   absent from the live catalog, and never closes a work order.
 - **Every model call has a fallback.** `model/with-fallback.ts` retries a
-  retryable failure on the other provider (OpenAI ⇄ OpenRouter), once.
+  retryable failure once on another provider or model (`FALLBACK_PROVIDER`,
+  `FALLBACK_MODEL`; by default OpenAI ⇄ OpenRouter, in this build Gemini 2.5
+  Flash → Gemini 2.5 Pro).
 
 An absence is rendered as a statement, never as a blank: the card and the
 document say what was searched, where, when, and that nothing was found.
@@ -111,7 +113,8 @@ npm run verify            # typecheck + every test, offline, no credentials
 |---|---|---|
 | `AMBIGUOUS_API_KEY` | The workspace: detector reads, approved writes. Without it every read and write fails loudly; nothing degrades to an empty result. | [Ambiguous AI](https://www.ambiguous.ai/) → your demo workspace → Connect. Setup: [using-sponsor-tools.md](using-sponsor-tools.md#ambiguous-ai). |
 | `OPENAI_API_KEY`, `MODEL` | Primary model provider. | [OpenAI](https://platform.openai.com/api-keys) |
-| `OPENROUTER_API_KEY` (optional `FALLBACK_MODEL`) | Fallback provider. Required to demonstrate the failure path. | [OpenRouter](https://openrouter.ai/keys) |
+| `GOOGLE_API_KEY` | Gemini as a provider (`MODEL_PROVIDER=google`, `MODEL=gemini-2.5-flash`); what this build runs on. | [Google AI Studio](https://aistudio.google.com/apikey) |
+| `FALLBACK_PROVIDER`, `FALLBACK_MODEL` | Where a retryable failure hops to (this build: `google` / `gemini-2.5-pro`). `OPENROUTER_API_KEY` enables the cross-vendor hop. | [OpenRouter](https://openrouter.ai/keys) |
 | `INTELLIGENCE_API_KEY`, `CHANNEL_CODE` | Slack, through a managed CopilotKit Channel. No public URL or tunnel is needed: Intelligence dials this process over an outbound websocket. | `npm run channel:setup -- --no-clipboard` and follow the printed prompt. |
 | `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` | Scope check on every write action (RS256 API with permissions `write:workspace`, `send:channel`, `schedule:job`, granted to a Machine to Machine application). | [Auth0](https://manage.auth0.com/). Setup: [using-sponsor-tools.md](using-sponsor-tools.md#auth0). |
 | `ALLOW_UNVERIFIED_WRITES=1` | **Development only.** Lets writes through without Auth0. Every execution logs `AUTH0 BYPASS` and every action logs `verified: false`; it is never silent. | — |

@@ -170,12 +170,15 @@ approved by the technician leaving the floor.
   (`MODEL_PROVIDER=google`, `MODEL=gemini-2.5-flash`). Every model call goes
   through `withFallback`, which re-resolves against a second provider on a
   retryable error.
-- **OpenAI / OpenRouter** — supported providers of that same fallback, and the
-  pairing its 10 hermetic tests exercise. **Neither key is present in the
-  submitted build**, so with one provider configured there is no second hop to
-  demonstrate: `FORCE_PROVIDER_FAILURE=1` fails the primary and then reports the
-  missing key rather than completing the run. The cross-provider path is
-  implemented and tested, not demonstrated live here.
+- **OpenAI / OpenRouter** — supported providers of the same fallback, and the
+  pairing its hermetic tests exercise. In the submitted build the fallback is a
+  **second model within Google** (`FALLBACK_PROVIDER=google`,
+  `FALLBACK_MODEL=gemini-2.5-pro`): OpenRouter was down and the OpenAI
+  organisation had no credit during the event. Verified live with
+  `FORCE_PROVIDER_FAILURE=1`: the primary fails with a simulated 503, the log
+  shows `primary provider failed, switching provider` and the same run
+  completes on the fallback with the full proposal. With an OpenAI or
+  OpenRouter key present, the same hop crosses vendors.
 
 Sponsor count is not a judging criterion; each tool above carries a distinct,
 visible part of the one workflow. Where a sponsor's integration is implemented
