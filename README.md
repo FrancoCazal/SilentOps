@@ -16,6 +16,15 @@ written. The agent can only propose; every write crosses one scoped boundary.
 Built at the AI Tinkerers **Agents, Everywhere** global hackathon (September
 12–13, 2026) by Club de Programación FIUNA. Product spec: [SILENTOPS.md](SILENTOPS.md).
 
+> **My part — Franco Cazal, R1 "the brain".** The deterministic missing-handover
+> detector, the propose-only agent loop, the domain prompts and read tools,
+> provider fallback, and the eval harness the 15-case golden set runs on. I also
+> wrote the product spec ([SILENTOPS.md](SILENTOPS.md)) and the frozen contracts
+> and ownership map ([team-docs/](team-docs/)) that let four people build in
+> parallel on disjoint files, and ran the gates and the merges to `main`. After
+> the event: CI, the frontend audit and the detector's timezone fix. The rest of
+> the team is listed under [Team](#team).
+
 ## What the demo shows
 
 1. **05:45.** The detector reads the current shift from the workspace calendar
@@ -263,6 +272,21 @@ global hackathon, hosted at FIUNA on September 12, 2026, one of the local
 sessions that ran the same day in cities around the world. Photos from the day
 are in the [event gallery](https://asuncion.aitinkerers.org/meetup/mu_ZFIr6znWcjg/gallery).
 Banner: AI Tinkerers.
+
+## Team
+
+Club de Programación FIUNA. Each role owned a disjoint set of files; the
+ownership map is in [`team-docs/`](team-docs/README.md).
+
+| Role | Who | Owned |
+|---|---|---|
+| R1 · the brain | Franco ([@FrancoCazal](https://github.com/FrancoCazal)) | Detector, agent loop, prompts, read tools, eval harness, provider fallback; spec, contracts, gates |
+| R2 · backend | Rodrigo ([@Rodri10a](https://github.com/Rodri10a)) | Write boundary, Auth0, idempotency, Ambiguous writer, Slack adapter, deploy |
+| R3 · surface | David ([@davidgimenezs](https://github.com/davidgimenezs)) | Approval card, web app (landing, access, console), storyboard, video, submission |
+| R4 · integration | Ivan ([@ivanarturo96](https://github.com/ivanarturo96)) | Ambiguous workspace, `tools:list`, synthetic data, golden set, end-to-end runs |
+
+GitHub's contributor list also counts the CopilotKit starter-kit history this
+repository started from; see [Inherited vs built](#inherited-vs-built).
 
 ## Inherited vs built
 
