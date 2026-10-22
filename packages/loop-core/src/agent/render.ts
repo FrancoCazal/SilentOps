@@ -4,6 +4,7 @@
  * lo que hace que el agente sea "de ese lugar" y no un chatbot con un webhook.
  */
 import type { InboundEvent } from "../channels/inbound";
+import { wallClock } from "../domain/facility-time";
 
 const CHANNEL_LABEL: Record<InboundEvent["channel"], string> = {
   whatsapp: "WhatsApp",
@@ -15,13 +16,15 @@ const CHANNEL_LABEL: Record<InboundEvent["channel"], string> = {
 };
 
 export function renderEvent(evt: InboundEvent): string {
+  // La hora del hub, no la del servidor: "fuera de horario" es un hecho local.
   const when = new Date(evt.receivedAt);
-  const hour = Number.isNaN(when.getTime()) ? undefined : when.getHours();
+  const wall = Number.isNaN(when.getTime()) ? undefined : wallClock(when);
+  const hour = wall?.hour;
   const lines: string[] = [];
 
   lines.push(
     `Entro un evento por ${CHANNEL_LABEL[evt.channel]}` +
-      (hour === undefined ? "." : ` a las ${pad(hour)}:${pad(when.getMinutes())}.`),
+      (wall === undefined ? "." : ` a las ${pad(wall.hour)}:${pad(wall.minute)}.`),
   );
   if (hour !== undefined && (hour >= 20 || hour < 7)) {
     lines.push("Es fuera de horario de oficina.");

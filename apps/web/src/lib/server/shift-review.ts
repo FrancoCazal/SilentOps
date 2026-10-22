@@ -2,6 +2,7 @@ import {
   TOOLS,
   createAmbiguousWorkspaceReader,
   detectMissingHandover,
+  facilityClock,
   isWorkspaceReaderRegistered,
   localDateKey,
   minutesUntil,
@@ -151,7 +152,7 @@ async function readReview(): Promise<ShiftReview> {
     }
 
     const expectedRecord = `Handover ${shift.name} ${localDateKey(now)}`;
-    const searchedAt = hhmm(now);
+    const searchedAt = facilityClock(now);
     const found = asArray(
       await withTimeout(
         readTool(TOOLS.searchDocuments, { query: expectedRecord }),
@@ -237,14 +238,13 @@ function personName(value: unknown): string | undefined {
   );
 }
 
-/** ISO timestamps render as a clock; anything else passes through. */
+/** ISO timestamps render as the hub's clock; anything else passes through. */
 function shortTime(value: unknown): string | undefined {
   const text = str(value);
   if (!text) return undefined;
   const at = new Date(text);
   if (Number.isNaN(at.getTime())) return text;
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${p(at.getHours())}:${p(at.getMinutes())}`;
+  return facilityClock(at);
 }
 
 type ShiftWithStart = ShiftFacts & { startAt?: string };
@@ -329,9 +329,4 @@ function asArray(value: unknown): unknown[] {
     }
   }
   return [];
-}
-
-function hhmm(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${p(d.getHours())}:${p(d.getMinutes())}`;
 }

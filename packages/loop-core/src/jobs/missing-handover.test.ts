@@ -9,7 +9,7 @@
  *    haria creer al detector que el handover no existe e inventaria una ausencia.
  *    La ausencia es la evidencia central del producto.
  */
-import { describe, it, beforeEach } from "node:test";
+import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import type { InboundEvent } from "../channels/inbound";
 import { TOOLS } from "../domain/tools";
@@ -19,6 +19,7 @@ import {
   registerWorkspaceReader,
   resetWorkspaceReader,
 } from "../domain/workspace-reader";
+import { facilityClock, facilityTimeZone } from "../domain/facility-time";
 import { detectMissingHandover, localDateKey, minutesUntil } from "./missing-handover";
 
 const SHIFT = {
@@ -29,8 +30,14 @@ const SHIFT = {
   incoming: ["Bruno"],
 };
 
-/** 05:45 hora local del 12-09-2026: quince minutos antes de que cierre el turno. */
-const NOW = new Date(2026, 8, 12, 5, 45);
+/**
+ * Un instante en la hora del hub (Asuncion, UTC-3). Escrito con offset y no con
+ * `new Date(2026, 8, 12, ...)`: eso es la zona del proceso, y en CI es UTC.
+ */
+const hub = (local: string) => new Date(`${local}-03:00`);
+
+/** 05:45 en el hub, 12-09-2026: quince minutos antes de que cierre el turno. */
+const NOW = hub("2026-09-12T05:45:00");
 
 type Call = { tool: string; args: Record<string, unknown> };
 
@@ -119,7 +126,7 @@ describe("detector missing-handover", () => {
   it("NO dispara si el turno todavia no cierra", async () => {
     const calls = recordingReader();
 
-    const evt = await detectMissingHandover({ now: new Date(2026, 8, 12, 2, 0) });
+    const evt = await detectMissingHandover({ now: hub("2026-09-12T02:00:00") });
 
     assert.equal(evt, null);
     assert.deepEqual(calls.map((c) => c.tool), [TOOLS.currentShift]);
@@ -135,7 +142,7 @@ describe("detector missing-handover", () => {
     recordingReader();
 
     const a = await detectMissingHandover({ now: NOW });
-    const b = await detectMissingHandover({ now: new Date(2026, 8, 12, 5, 50) });
+    const b = await detectMissingHandover({ now: hub("2026-09-12T05:50:00") });
 
     assert.equal(a!.id, "missing-handover:Noche:2026-09-12");
     assert.equal(a!.id, b!.id, "la semilla de idempotencia tiene que ser estable");
@@ -144,11 +151,11 @@ describe("detector missing-handover", () => {
   it("respeta la ventana de leadMinutes", async () => {
     recordingReader();
 
-    const fuera = await detectMissingHandover({ now: new Date(2026, 8, 12, 5, 30) });
+    const fuera = await detectMissingHandover({ now: hub("2026-09-12T05:30:00") });
     assert.equal(fuera, null, "30 minutos antes esta fuera de la ventana de 15");
 
     const dentro = await detectMissingHandover({
-      now: new Date(2026, 8, 12, 5, 30),
+      now: hub("2026-09-12T05:30:00"),
       leadMinutes: 45,
     });
     assert.ok(dentro, "con la ventana ampliada, si dispara");
@@ -182,17 +189,43 @@ describe("workspace reader", () => {
 
 describe("aritmetica de turnos", () => {
   it("minutesUntil tolera un turno que cruza medianoche", () => {
-    assert.equal(minutesUntil(new Date(2026, 8, 12, 5, 45), "06:00"), 15);
-    assert.equal(minutesUntil(new Date(2026, 8, 11, 23, 50), "06:00"), 370);
-    assert.equal(minutesUntil(new Date(2026, 8, 12, 6, 10), "06:00"), -10, "ya paso");
+    assert.equal(minutesUntil(hub("2026-09-12T05:45:00"), "06:00"), 15);
+    assert.equal(minutesUntil(hub("2026-09-11T23:50:00"), "06:00"), 370);
+    assert.equal(minutesUntil(hub("2026-09-12T06:10:00"), "06:00"), -10, "ya paso");
   });
 
   it("minutesUntil devuelve NaN con una hora invalida en vez de un numero inventado", () => {
     assert.ok(Number.isNaN(minutesUntil(NOW, "no-es-una-hora")));
   });
 
-  it("localDateKey usa la fecha local: el turno es un hecho local, no UTC", () => {
-    assert.equal(localDateKey(new Date(2026, 8, 12, 5, 45)), "2026-09-12");
-    assert.equal(localDateKey(new Date(2026, 0, 1, 0, 5)), "2026-01-01");
+  it("localDateKey usa la fecha del hub: el turno es un hecho local, no UTC", () => {
+    assert.equal(localDateKey(hub("2026-09-12T05:45:00")), "2026-09-12");
+    assert.equal(localDateKey(hub("2026-01-01T00:05:00")), "2026-01-01");
+    // 23:30 en el hub ya es el 13 en UTC: la fecha del handover sigue siendo el 12.
+    assert.equal(localDateKey(hub("2026-09-12T23:30:00")), "2026-09-12");
+  });
+});
+
+describe("zona horaria del hub", () => {
+  let saved: string | undefined;
+  beforeEach(() => {
+    saved = process.env.SILENTOPS_TIMEZONE;
+  });
+  afterEach(() => {
+    if (saved === undefined) delete process.env.SILENTOPS_TIMEZONE;
+    else process.env.SILENTOPS_TIMEZONE = saved;
+  });
+
+  it("el cierre se mide en la hora del hub, no en la del servidor", () => {
+    delete process.env.SILENTOPS_TIMEZONE;
+    // 08:45 UTC son las 05:45 en Asuncion: faltan 15 minutos, corra donde corra.
+    assert.equal(minutesUntil(new Date("2026-09-12T08:45:00Z"), "06:00"), 15);
+    assert.equal(facilityClock(new Date("2026-09-12T08:45:00Z")), "05:45");
+  });
+
+  it("SILENTOPS_TIMEZONE elige otra zona para el hub", () => {
+    process.env.SILENTOPS_TIMEZONE = "UTC";
+    assert.equal(facilityTimeZone(), "UTC");
+    assert.equal(minutesUntil(NOW, "06:00"), -165, "las 05:45 en Asuncion son las 08:45 en UTC");
   });
 });

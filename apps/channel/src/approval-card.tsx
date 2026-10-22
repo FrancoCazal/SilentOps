@@ -27,6 +27,7 @@ import {
   Button,
 } from "@copilotkit/channels";
 import { effectiveActions, type Proposal, type Risk } from "loop-core/contracts";
+import { facilityClock } from "loop-core/facility-time";
 
 /**
  * The detector's recorded absence evidence. It lives on
@@ -176,12 +177,11 @@ function readUserName(user: unknown): string | undefined {
   return undefined;
 }
 
-/** `HH:MM` of an ISO timestamp, for the approval window shown on the card. */
+/** `HH:MM` of an ISO timestamp on the hub's clock, for the approval window shown on the card. */
 function clockOf(iso: string): string | undefined {
   const at = new Date(iso);
   if (Number.isNaN(at.getTime())) return undefined;
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${p(at.getHours())}:${p(at.getMinutes())}`;
+  return facilityClock(at);
 }
 
 /**

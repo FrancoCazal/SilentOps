@@ -11,6 +11,7 @@
  * cadena de evidencia.
  */
 import type { InboundEvent } from "../channels/inbound";
+import { facilityClock, facilityDateKey, wallClock } from "../domain/facility-time";
 import { TOOLS } from "../domain/tools";
 import { readTool } from "../domain/workspace-reader";
 import { log } from "../observability/log";
@@ -71,7 +72,7 @@ export async function detectMissingHandover(
 
   const dateKey = localDateKey(now);
   const expectedRecord = `Handover ${shift.name} ${dateKey}`;
-  const searchedAt = clock(now);
+  const searchedAt = facilityClock(now);
 
   const found = asArray(await readTool(TOOLS.searchDocuments, { query: expectedRecord }));
 
@@ -120,31 +121,24 @@ export async function detectMissingHandover(
 }
 
 /**
- * Minutos desde `now` hasta un "HH:MM" del reloj, tolerando turnos que cruzan
- * medianoche (22:00 a 06:00). Negativo = ya paso.
+ * Minutos desde `now` hasta un "HH:MM" del reloj del hub, tolerando turnos que
+ * cruzan medianoche (22:00 a 06:00). Negativo = ya paso.
  */
 export function minutesUntil(now: Date, hhmm: string): number {
   const [hh, mm] = hhmm.split(":");
   const h = Number(hh);
   const m = Number(mm);
   if (!Number.isFinite(h) || !Number.isFinite(m)) return Number.NaN;
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  let diff = h * 60 + m - nowMinutes;
+  const wall = wallClock(now);
+  let diff = h * 60 + m - (wall.hour * 60 + wall.minute);
   if (diff < -12 * 60) diff += 24 * 60;
   if (diff > 12 * 60) diff -= 24 * 60;
   return diff;
 }
 
-/** YYYY-MM-DD en hora local (no UTC: el turno es un hecho local). */
+/** YYYY-MM-DD en la fecha del hub (ni UTC ni la zona del servidor: el turno es un hecho local). */
 export function localDateKey(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
-
-/** HH:MM en hora local. */
-function clock(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+  return facilityDateKey(d);
 }
 
 function asArray(v: unknown): unknown[] {

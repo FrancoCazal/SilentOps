@@ -6,6 +6,7 @@
  * sus respuestas (`data`, paginacion y fechas) antes de entregarlas al agente.
  * Ningun camino de este modulo llama a una tool de escritura.
  */
+import { facilityTimeZone } from "../domain/facility-time";
 import { TOOLS } from "../domain/tools";
 import type { WorkspaceReader } from "../domain/workspace-reader";
 import { ambiguousExecutor } from "./workplace-mcp";
@@ -30,7 +31,10 @@ export type AmbiguousReaderOptions = {
   calendarName?: string;
   /** Nombre del canal operativo, con o sin el prefijo #. */
   channelName?: string;
-  /** IANA timezone del calendario. Solo afecta como se muestran HH:MM. */
+  /**
+   * IANA timezone del hub. Pasa el calendario a HH:MM; por defecto la de
+   * `facilityTimeZone()`, la misma con la que el detector compara el cierre.
+   */
   timeZone?: string;
   /** Inyectable para tests; por defecto usa el MCP real. */
   call?: WorkplaceReadCall;
@@ -39,7 +43,6 @@ export type AmbiguousReaderOptions = {
 const DEFAULTS = {
   calendarName: "SilentOps Demo",
   channelName: "operaciones-hub-frio",
-  timeZone: "America/Asuncion",
 };
 
 /**
@@ -52,7 +55,7 @@ export function createAmbiguousWorkspaceReader(
   const call = options.call ?? ambiguousExecutor;
   const calendarName = options.calendarName ?? DEFAULTS.calendarName;
   const channelName = normalizeChannel(options.channelName ?? DEFAULTS.channelName);
-  const timeZone = options.timeZone ?? DEFAULTS.timeZone;
+  const timeZone = options.timeZone ?? facilityTimeZone();
   let calendarId: Promise<string> | undefined;
   let channelId: Promise<string> | undefined;
 

@@ -1,3 +1,4 @@
+import { facilityClock } from "loop-core/facility-time";
 import { ConsoleShell } from "./console-shell";
 import type { ShiftFacts, ShiftReview } from "@/lib/server/shift-review";
 import styles from "./console.module.css";
@@ -49,10 +50,8 @@ export function LiveShift({ review }: { review: ShiftReview }) {
     throw new Error("LiveShift requires a readable workspace");
   }
 
-  const clock = new Date(review.at).toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // The hub's clock: on a UTC server toLocaleTimeString would be three hours off.
+  const clock = facilityClock(new Date(review.at));
 
   return (
     <ConsoleShell

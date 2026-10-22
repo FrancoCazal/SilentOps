@@ -156,6 +156,7 @@ npm run verify            # typecheck + every test, offline, no credentials
 | `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` | Scope check on every write action (RS256 API with permissions `write:workspace`, `send:channel`, `schedule:job`, granted to a Machine to Machine application). | [Auth0](https://manage.auth0.com/). Setup: [using-sponsor-tools.md](using-sponsor-tools.md#auth0). |
 | `ALLOW_UNVERIFIED_WRITES=1` | **Development only.** Lets writes through without Auth0. Every execution logs `AUTH0 BYPASS` and every action logs `verified: false`; it is never silent. | — |
 | `SILENTOPS_DEMO_AT` | Freezes "now" so the detector meets the shift boundary at any time of day, e.g. `2026-09-12T05:45:00-03:00`. | — |
+| `SILENTOPS_TIMEZONE` | The hub's IANA time zone (default `America/Asuncion`). Shift closes, handover dates and every clock shown are read in it, so the detector behaves the same on a laptop in Asunción and on a UTC server. | — |
 | `FORCE_PROVIDER_FAILURE=1` | Kill switch for the video: the primary provider returns 503 and the run completes on the fallback. | — |
 | `SILENTOPS_DETECT_EVERY_MS`, `LOOP_STATE_DIR`, `AMBIGUOUS_APP_URL`, `PORT`, `LOG_LEVEL` | Detector interval (default 60000), on-disk state directory (default `.data/loop-core`), base URL for document links (default `https://app.ambiguous.ai`), HTTP port, runtime log level. | — |
 

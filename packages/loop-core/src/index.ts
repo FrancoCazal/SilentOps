@@ -21,6 +21,12 @@ export type { AmbiguousReaderOptions, WorkplaceReadCall } from "./boundary/ambig
 export { detectMissingHandover, minutesUntil, localDateKey } from "./jobs/missing-handover";
 export type { Shift, DetectOptions } from "./jobs/missing-handover";
 export {
+  facilityClock,
+  facilityDateKey,
+  facilityTimeZone,
+  wallClock,
+} from "./domain/facility-time";
+export {
   executeApproved,
   registerWorkspaceExecutor,
   registerJobScheduler,
