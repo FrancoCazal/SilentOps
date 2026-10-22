@@ -15,7 +15,6 @@ written. The agent can only propose; every write crosses one scoped boundary.
 
 Built at the AI Tinkerers **Agents, Everywhere** global hackathon (September
 12–13, 2026) by Club de Programación FIUNA. Product spec: [SILENTOPS.md](SILENTOPS.md).
-Two-minute demo video: _(add link before submission)_.
 
 ## What the demo shows
 
@@ -38,6 +37,41 @@ Two-minute demo video: _(add link before submission)_.
 
 SilentOps never operates refrigeration, evaluates readings or decides whether a
 product is safe. It prepares a sourced record for an accountable human.
+
+## Screens
+
+The web app in [`apps/web/`](apps/web/) holds the product site and the control
+tower, a read-only review of each shift boundary; the site is deployed at
+[silentops-console.vercel.app](https://silentops-console.vercel.app). A
+deployment without a hub access code (`CONSOLE_ACCESS_CODE`) serves the tower as
+a public demo over synthetic sample data, and that demo never reads the
+workspace.
+
+![Control tower: the night shift closes at 06:00 with no handover; the ledger, the absence evidence and the sourced handover proposal waiting for approval](assets/screens/console-shift.png)
+
+*Control tower, Shift: the ledger of the night shift, the search that came back
+empty, and the proposal with a source on every bullet. The Approve and Reject
+buttons here only switch the preview; the real decision is made on the Slack card,
+through the same write boundary.*
+
+![The approval card as previewed on the product site: evidence of absence, three sourced evidence bullets, the three work orders to reassign, and Approve / Reject](assets/screens/approval-card.png)
+
+*The approval card in its pending state. The site previews all four states:
+pending, approved, rejected, and the shift where the handover exists and the agent
+stays silent.*
+
+![Control tower, History: six shift boundaries, three with a missing handover, and the silent shifts counted alongside the detections](assets/screens/console-history.png)
+
+*History: every boundary the detector checked, including the ones where it did
+nothing. The restraint is part of the claim, so the silent shifts are counted.*
+
+![Product site hero: "The proof is not what was said. It is what nobody wrote down."](assets/screens/landing.png)
+
+<p>
+  <img width="270" alt="Product site on a phone" src="assets/screens/landing-mobile.png">
+  &nbsp;
+  <img width="270" alt="Control tower on a phone" src="assets/screens/console-mobile.png">
+</p>
 
 ## How it works
 
@@ -90,6 +124,7 @@ document say what was searched, where, when, and that nothing was found.
 | Path | What it is |
 |---|---|
 | [`packages/loop-core/`](packages/loop-core/) | Everything built during the event: frozen contracts (`contracts.ts`), the propose-only agent loop (`agent/`), domain prompts and read tools (`domain/`), the detector (`jobs/missing-handover.ts`), provider fallback (`model/`), the write boundary and workspace adapters (`boundary/`), proposal store (`approval/`), evals with a scripted model and a 15-case golden set (`evals/`). |
+| [`apps/web/`](apps/web/) | The product site and the read-only control tower (`/console`: shift, history, settings), gated by a hub access code or open as a public sample demo when none is set. The starter kit's `/kit-demo` and `/voice` stay here and answer only on loopback. |
 | [`apps/channel/`](apps/channel/) | The Slack surface on CopilotKit Channels. `silentops-channel.tsx` (mention → watch, detector loop, approval card, Approve → `approveAndExecute`), `inbound-slack.ts` (Slack message → `InboundEvent`, the agent never sees the raw payload), `server.ts`. The kit's incident demo files remain untouched for reference. |
 | [`SILENTOPS.md`](SILENTOPS.md) | Product specification: thesis, Tier 0, context contract, guardrails, evals, non-goals, video story. |
 | [`SUBMISSION.md`](SUBMISSION.md) | What was inherited vs built, and the evidence checklist. |
@@ -200,6 +235,17 @@ detector's tests; running it live means creating and then permanently deleting
 a handover document, because workspace search also returns trashed documents.
 The full record, including open issues and their owners, is in
 [`fixes/backend-r2.md`](fixes/backend-r2.md).
+
+## The event
+
+![Agents, Everywhere: Bots, Channels, & More. AI Tinkerers global hackathon, presented with OpenAI, sponsored by CopilotKit and OpenRouter](assets/event/ai-tinkerers-agents-everywhere.jpg)
+
+SilentOps was built at the Asunción edition of the AI Tinkerers
+[Agents, Everywhere](https://asuncion.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)
+global hackathon, hosted at FIUNA on September 12, 2026, one of the local
+sessions that ran the same day in cities around the world. Photos from the day
+are in the [event gallery](https://asuncion.aitinkerers.org/meetup/mu_ZFIr6znWcjg/gallery).
+Banner: AI Tinkerers.
 
 ## Inherited vs built
 
