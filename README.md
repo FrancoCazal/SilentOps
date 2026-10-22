@@ -75,6 +75,8 @@ nothing. The restraint is part of the claim, so the silent shifts are counted.*
 
 ## How it works
 
+![How SilentOps connects: Slack and the Node.js channel server feed the detector and the agent in loop-core; a human approves the proposal in Slack; only the write boundary, with an Auth0 scope per action, writes to the Ambiguous workspace over MCP](demo/diagramas/01-arquitectura-silentops.png)
+
 ```mermaid
 sequenceDiagram
     participant D as Detector (cron, no LLM)
@@ -92,6 +94,10 @@ sequenceDiagram
     B->>W: create_document / update_task (via domain intents)
     B->>S: link and result
 ```
+
+The same flow with its failure branches (the handover already exists, the
+supervisor rejects, a scope is missing) is in
+[`demo/diagramas/02-flujo-handover-silentops.png`](demo/diagramas/02-flujo-handover-silentops.png).
 
 Four invariants hold by construction, not by prompt:
 
@@ -236,6 +242,16 @@ detector's tests; running it live means creating and then permanently deleting
 a handover document, because workspace search also returns trashed documents.
 The full record, including open issues and their owners, is in
 [`fixes/backend-r2.md`](fixes/backend-r2.md).
+
+With a live model, `npm run silentops:rehearse -w loop-core` (Gemini 2.5
+Flash) has run the whole loop end to end: absence detected, handover and three
+reassignments proposed, document created and work orders updated through the
+write boundary, the replay skipped every action. The 15 golden cases are a
+different claim: they pass 15 of 15 against the scripted model and **5 of 15
+against Gemini 2.5 Flash** (`EVAL_MOCK=0`). The model does not yet emit the
+`channel.send` step, and two adversarial cases propose writes where the golden
+expects none. In every case the model's only action tool is `propose_action`
+and nothing executes without approval.
 
 ## The event
 
