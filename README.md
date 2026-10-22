@@ -1,5 +1,7 @@
 # SilentOps — continuity for critical cold-chain operations
 
+![Agents, Everywhere hackathon — OpenAI, CopilotKit, OpenRouter, Exa, Auth0, and Ambiguous AI](assets/banner.png)
+
 > Critical facilities do not fail only when equipment breaks. They fail when the
 > next shift does not know what is still open.
 
@@ -209,5 +211,3 @@ provider resolution and the sponsor notes unmodified. Everything under
 `packages/loop-core/`, the SilentOps files in `apps/channel/src/`, and the
 project documents were created during the event. Details and the eligibility
 checklist: [SUBMISSION.md](SUBMISSION.md).
-
-![Agents, Everywhere hackathon — OpenAI, CopilotKit, OpenRouter, Exa, Auth0, and Ambiguous AI](assets/banner.png)
