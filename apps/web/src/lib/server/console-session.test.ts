@@ -43,6 +43,19 @@ test("an unconfigured gate rejects every code and every session", async () => {
   assert.equal(gate.sessionIsValid(issued), false);
 });
 
+test("no code opens the sample demo; a code requires a valid session", async () => {
+  const gate = await load();
+  const issued = gate.issueSession();
+  assert.equal(gate.consoleAccess(issued), "session");
+  assert.equal(gate.consoleAccess(undefined), "denied");
+  assert.equal(gate.consoleAccess("not-a-token"), "denied");
+
+  delete process.env.CONSOLE_ACCESS_CODE;
+  assert.equal(gate.consoleAccess(undefined), "demo");
+  // A stale cookie must not upgrade the demo to live data.
+  assert.equal(gate.consoleAccess(issued), "demo");
+});
+
 test("only the exact code matches; near misses and prefixes do not", async () => {
   const gate = await load();
   assert.equal(gate.codeMatches("correct-horse-battery"), true);

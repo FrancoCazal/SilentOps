@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AccessForm } from "@/components/access/access-form";
-import { COOKIE_NAME, gateIsConfigured, sessionIsValid } from "@/lib/server/console-session";
+import { COOKIE_NAME, consoleAccess, gateIsConfigured } from "@/lib/server/console-session";
 
 /**
  * Access route for the control tower.
  *
- * Resolves two things on the server so the browser is never the authority:
- * whether a session already exists (skip straight to the tower) and whether the
- * gate has a code at all (tell the operator up front instead of after a failed
- * attempt).
+ * Resolved on the server so the browser is never the authority: with a valid
+ * session there is nothing to sign into, and with no code configured the tower
+ * is the public sample demo, so both go straight to /console. Only a gate with a
+ * code and no session renders the form.
  */
 export const metadata: Metadata = {
   title: "Sign in — SilentOps",
@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AccessPage() {
   const store = await cookies();
-  if (sessionIsValid(store.get(COOKIE_NAME)?.value)) {
+  if (consoleAccess(store.get(COOKIE_NAME)?.value) !== "denied") {
     redirect("/console");
   }
   return <AccessForm configured={gateIsConfigured()} />;

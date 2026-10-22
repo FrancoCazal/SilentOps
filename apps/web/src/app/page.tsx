@@ -50,8 +50,12 @@ const steps = [
   },
 ] as const;
 
-/** Widths of the placeholder customer marks, in pixels. */
-const logoWidths = [118, 100, 130, 108] as const;
+/**
+ * What the demo build actually runs on. This strip replaced a row of
+ * placeholder customer logos: SilentOps has no customers, so it states where it
+ * was built instead.
+ */
+const stack = ["CopilotKit", "Slack", "Gemini", "Auth0", "Ambiguous AI"] as const;
 
 export default function Landing() {
   return (
@@ -134,19 +138,18 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className={styles.logos} aria-label="Adoption">
+        <section className={styles.logos} aria-label="Origin">
           <span className={styles.logosLabel}>
-            In use across continuous guard operations
+            Built at AI Tinkerers · Agents, Everywhere global hackathon ·
+            FIUNA, Asunción · Sept 12–13, 2026
           </span>
-          <div className={styles.logosRow} aria-hidden="true">
-            {logoWidths.map((width, index) => (
-              <span
-                key={index}
-                className={styles.logoMark}
-                style={{ width: `${width}px` }}
-              />
+          <ul className={styles.logosRow} aria-label="Stack">
+            {stack.map((name) => (
+              <li key={name} className={styles.stackItem}>
+                {name}
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
 
         <section id="how" className={styles.sectionAlt}>
@@ -267,6 +270,13 @@ export default function Landing() {
           © 2026 SilentOps ·{" "}
           <a className={styles.footerLink} href="/console">
             Control tower
+          </a>{" "}
+          ·{" "}
+          <a
+            className={styles.footerLink}
+            href="https://github.com/FrancoCazal/SilentOps"
+          >
+            Source
           </a>
         </span>
         <span className={styles.footerNote}>

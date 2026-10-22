@@ -14,6 +14,10 @@ import { loadShiftReview } from "@/lib/server/shift-review";
  * With a readable workspace this renders live data. Without one it falls back to
  * the sample view and says why — a dashboard that silently shows fixtures while
  * looking live is worse than one that admits it cannot reach the workspace.
+ *
+ * On a deployment with no access code the tower is a public demo: it renders
+ * the sample view and never calls `loadShiftReview()`, so live workspace data
+ * stays behind the code even when a workspace key is present.
  */
 export const metadata: Metadata = {
   title: "Control tower — SilentOps",
@@ -24,7 +28,23 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ConsolePage() {
-  await requireConsoleSession("/console");
+  const access = await requireConsoleSession("/console");
+
+  if (access === "demo") {
+    return (
+      <ConsoleView
+        demo
+        notice={
+          <>
+            <strong>Public demo.</strong> Synthetic sample data, modeled on the
+            hackathon demo workspace. With a hub access code this view reads the
+            live workspace; approvals always happen in Slack.
+          </>
+        }
+      />
+    );
+  }
+
   const review = await loadShiftReview();
 
   if (review.status === "unconfigured") {

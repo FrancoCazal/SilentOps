@@ -32,7 +32,11 @@ npm run dev:web
 Open `http://127.0.0.1:3100` or `http://localhost:3100`. The root route is the
 SilentOps commercial site; the inherited incident sample described below now
 lives at `/kit-demo`, and the voice route is unchanged at `/voice`. Select an
-incident there. The dev and start scripts bind the credential-backed approval
+incident there. Both routes and their APIs answer only on loopback
+(`src/middleware.ts`); on a deployed host they return 404 unless
+`ALLOW_KIT_ROUTES=1`. The control tower is at `/console`: with
+`CONSOLE_ACCESS_CODE` set it asks for that code, without it it opens as a public
+demo over sample data. The dev and start scripts bind the credential-backed approval
 server to loopback by default; keep that boundary unless you add your own
 authentication and trusted-origin policy.
 

@@ -29,13 +29,16 @@ const sections: readonly { id: ConsoleSection; label: string; href: string }[] =
 export function ConsoleShell({
   active,
   toolbar,
-  badge = "Sample data · read-only",
+  demo = false,
+  badge = demo ? "Public demo · sample data" : "Sample data · read-only",
   notice,
   children,
 }: {
   active: ConsoleSection;
   /** Right-hand side of the topbar; the Shift view puts its clock here. */
   toolbar?: ReactNode;
+  /** No access code configured: there is no session to sign out of. */
+  demo?: boolean;
   /** Provenance marker. Live routes override the sample-data default. */
   badge?: ReactNode;
   /** Banner under the topbar, for why a view is degraded or synthetic. */
@@ -92,14 +95,16 @@ export function ConsoleShell({
             <span className={styles.sideUserName}>Ana</span>
             <span className={styles.sideUserRole}>Outgoing supervisor</span>
           </span>
-          <button
-            type="button"
-            className={styles.signOut}
-            onClick={signOut}
-            disabled={signingOut}
-          >
-            {signingOut ? "…" : "Sign out"}
-          </button>
+          {demo ? null : (
+            <button
+              type="button"
+              className={styles.signOut}
+              onClick={signOut}
+              disabled={signingOut}
+            >
+              {signingOut ? "…" : "Sign out"}
+            </button>
+          )}
         </div>
       </aside>
 

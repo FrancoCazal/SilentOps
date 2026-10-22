@@ -35,7 +35,7 @@ const outcomeClass = {
 } as const;
 
 export default async function HistoryPage() {
-  await requireConsoleSession("/console/history");
+  const access = await requireConsoleSession("/console/history");
 
   const detections = history.filter((entry) => entry.searchResults === 0);
   const approved = history.filter((entry) => entry.outcome === "approved");
@@ -51,7 +51,7 @@ export default async function HistoryPage() {
   ];
 
   return (
-    <ConsoleShell active="history">
+    <ConsoleShell active="history" demo={access === "demo"}>
       <div className={styles.subhead}>
         <div className={styles.subheadText}>
           <h1 className={styles.subheadTitle}>Shift history</h1>

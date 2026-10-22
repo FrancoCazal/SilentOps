@@ -50,12 +50,34 @@ function configuredCode(): string | undefined {
 }
 
 /**
- * The gate fails closed. With no `CONSOLE_ACCESS_CODE` set, nobody gets in —
- * rather than the more tempting default of leaving an admin dashboard open
- * because configuration is missing.
+ * The gate fails closed. With no `CONSOLE_ACCESS_CODE` set, nobody gets a
+ * session — rather than the more tempting default of leaving an admin dashboard
+ * open because configuration is missing. What an unconfigured deployment shows
+ * instead is the public sample demo; see `consoleAccess()`.
  */
 export function gateIsConfigured(): boolean {
   return configuredCode() !== undefined;
+}
+
+/**
+ * What a request may see in the control tower.
+ *
+ * - `session`: a valid signed cookie under a configured code. Live workspace
+ *   data and configuration state.
+ * - `demo`: no code configured. The tower opens read-only over the synthetic
+ *   sample data in `handover-data.ts`. Nothing live is read and no
+ *   configuration state is shown, so a public deployment without a code reveals
+ *   nothing its own bundle does not already ship.
+ * - `denied`: a code is configured and the request has no valid session.
+ */
+export type ConsoleAccess = "session" | "demo" | "denied";
+
+export function consoleAccess(
+  token: string | undefined,
+  now: number = Date.now(),
+): ConsoleAccess {
+  if (!gateIsConfigured()) return "demo";
+  return sessionIsValid(token, now) ? "session" : "denied";
 }
 
 /** Constant-time comparison over digests, so length never leaks. */

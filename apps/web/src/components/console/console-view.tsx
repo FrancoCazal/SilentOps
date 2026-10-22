@@ -60,7 +60,14 @@ function SourceTag() {
   return <span className={styles.sourceTag}>↗ source</span>;
 }
 
-export function ConsoleView({ notice }: { notice?: ReactNode }) {
+export function ConsoleView({
+  notice,
+  demo = false,
+}: {
+  notice?: ReactNode;
+  /** Public demo: no access code configured, so no session either. */
+  demo?: boolean;
+}) {
   const [view, setView] = useState<View>("pending");
   const current = views[view];
   const close = ledgerClose[view];
@@ -90,6 +97,7 @@ export function ConsoleView({ notice }: { notice?: ReactNode }) {
   return (
     <ConsoleShell
       active="shift"
+      demo={demo}
       notice={notice}
       toolbar={
         <>

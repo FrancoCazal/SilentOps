@@ -42,11 +42,14 @@ const stateGlyph = {
 } as const;
 
 export default async function SettingsPage() {
-  await requireConsoleSession("/console/settings");
-  const groups = configGroups();
+  const access = await requireConsoleSession("/console/settings");
+  const demo = access === "demo";
+  // The public demo shows what ships in the bundle and nothing about this
+  // deployment's credentials, not even as booleans.
+  const groups = demo ? [] : configGroups();
 
   return (
-    <ConsoleShell active="settings">
+    <ConsoleShell active="settings" demo={demo}>
       <div className={styles.subhead}>
         <div className={styles.subheadText}>
           <h1 className={styles.subheadTitle}>Settings</h1>
@@ -103,6 +106,17 @@ export default async function SettingsPage() {
           </dl>
         </section>
 
+        {demo ? (
+          <section className={styles.settingsBlock}>
+            <h2 className={styles.blockTitle}>Integrations</h2>
+            <p className={styles.blockNote}>
+              Not shown in the public demo. Behind a hub access code, this
+              section reports the model fallback, the workspace and channel
+              connections, and the Auth0 write boundary.
+            </p>
+          </section>
+        ) : null}
+
         {groups.map((group) => (
           <section key={group.title} className={styles.settingsBlock}>
             <h2 className={styles.blockTitle}>{group.title}</h2>
@@ -144,10 +158,12 @@ export default async function SettingsPage() {
           </ul>
         </section>
 
-        <p className={styles.pageNote}>
-          Credential states above are reported as configured or not. No key
-          value, prefix or length is ever sent to this page.
-        </p>
+        {demo ? null : (
+          <p className={styles.pageNote}>
+            Credential states above are reported as configured or not. No key
+            value, prefix or length is ever sent to this page.
+          </p>
+        )}
       </div>
     </ConsoleShell>
   );
