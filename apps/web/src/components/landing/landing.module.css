@@ -70,6 +70,7 @@
 }
 .brandName {
   font: 600 15px/1 var(--sans);
+  color: var(--text);
 }
 .navLinks {
   display: flex;

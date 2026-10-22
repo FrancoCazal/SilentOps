@@ -8,7 +8,23 @@
  *
  * This is read-only. Nothing here writes to the environment: a browser that can
  * change a safety-relevant setting is a browser that can turn one off.
+ *
+ * The Model group asks `loop-core` which provider and model each hop resolves
+ * to, instead of re-deriving it here, so this page cannot describe a fallback
+ * the runtime would not take.
  */
+import {
+  fallbackTarget,
+  isProviderConfigured,
+  primaryProvider,
+  type ProviderName,
+} from "loop-core";
+
+const providerKeys: readonly { provider: ProviderName; label: string }[] = [
+  { provider: "openai", label: "OpenAI key" },
+  { provider: "openrouter", label: "OpenRouter key" },
+  { provider: "google", label: "Google AI key" },
+];
 
 function isSet(name: string): boolean {
   return Boolean(process.env[name]?.trim());
@@ -29,41 +45,52 @@ export type ConfigGroup = {
 };
 
 export function configGroups(): ConfigGroup[] {
-  const provider = process.env.MODEL_PROVIDER?.trim() || "openai";
+  const primary = primaryProvider();
   const model = process.env.MODEL?.trim() || "(provider default)";
-  const openai = isSet("OPENAI_API_KEY");
-  const openrouter = isSet("OPENROUTER_API_KEY");
-  const bothProviders = openai && openrouter;
+  const primaryReady = isProviderConfigured(primary);
+  const fallback = fallbackTarget();
+  const fallbackReady = isProviderConfigured(fallback.provider);
+  // A hop to the same provider and model retries the call that just failed.
+  const sameTarget =
+    fallback.provider === primary && (fallback.model ?? model) === model;
   const auth0 = isSet("AUTH0_DOMAIN") && isSet("AUTH0_AUDIENCE");
   const bypass = process.env.ALLOW_UNVERIFIED_WRITES === "1";
 
   return [
     {
       title: "Model",
-      note: "Every model call goes through the fallback, which switches to the other provider. The failure-path demo needs both keys.",
+      note: "Every model call goes through the fallback: a retryable failure is retried once on another provider or model. The failure-path demo needs both hops configured.",
       checks: [
         {
-          label: "Primary provider",
-          state: "ready",
-          detail: `${provider} · ${model}`,
+          label: "Primary",
+          state: primaryReady ? "ready" : "missing",
+          detail: primaryReady
+            ? `${primary} · ${model}`
+            : `${primary} · ${model} · key not configured`,
         },
         {
-          label: "OpenAI key",
-          state: openai ? "ready" : "missing",
-          detail: openai ? "configured" : "not configured",
+          label: "Fallback",
+          state: !fallbackReady || !fallback.model
+            ? "missing"
+            : sameTarget
+              ? "warning"
+              : "ready",
+          detail: !fallbackReady
+            ? `${fallback.provider} · key not configured`
+            : !fallback.model
+              ? `${fallback.provider} · FALLBACK_MODEL not set`
+              : sameTarget
+                ? `${fallback.provider} · ${fallback.model} · same as the primary`
+                : `${fallback.provider} · ${fallback.model}`,
         },
-        {
-          label: "OpenRouter key",
-          state: openrouter ? "ready" : "missing",
-          detail: openrouter ? "configured" : "not configured",
-        },
-        {
-          label: "Provider fallback",
-          state: bothProviders ? "ready" : "warning",
-          detail: bothProviders
-            ? "both providers configured"
-            : "needs both keys, or the fallback fails with the primary",
-        },
+        ...providerKeys.map(({ provider, label }): Check => {
+          const ready = isProviderConfigured(provider);
+          return {
+            label,
+            state: ready ? "ready" : "missing",
+            detail: ready ? "configured" : "not configured",
+          };
+        }),
       ],
     },
     {

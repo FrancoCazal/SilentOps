@@ -11,9 +11,9 @@ import "./globals.css";
  * `kit-demo/layout.tsx`, alongside the CopilotKit stylesheet.
  */
 export const metadata: Metadata = {
-  title: "SilentOps — Continuidad operativa para guardias críticas",
+  title: "SilentOps — Continuity for critical cold-chain operations",
   description:
-    "SilentOps detecta cuando falta un handover al cierre de turno, reúne evidencia con fuente y propone la reasignación en Slack.",
+    "SilentOps detects when a handover is missing at the end of a shift, gathers sourced evidence and proposes the reassignment in Slack.",
 };
 
 export default function RootLayout({

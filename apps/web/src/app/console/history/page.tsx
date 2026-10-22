@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ConsoleShell } from "@/components/console/console-shell";
-import { EXPECTED_RECORD, history } from "@/components/handover/handover-data";
+import { history } from "@/components/handover/handover-data";
 import { requireConsoleSession } from "@/lib/server/console-guard";
 import styles from "@/components/console/console.module.css";
 
@@ -93,11 +93,8 @@ export default async function HistoryPage() {
                   <span className={styles.traceGlyph} aria-hidden="true">
                     ⌕
                   </span>{" "}
-                  searched Documents for &ldquo;{EXPECTED_RECORD.replace(
-                    "Noche",
-                    entry.shift === "Night" ? "Noche" : "Mañana",
-                  )}
-                  &rdquo; <span className={styles.traceArrow}>→</span>{" "}
+                  searched Documents for &ldquo;{entry.record}&rdquo;{" "}
+                  <span className={styles.traceArrow}>→</span>{" "}
                   <span className={missing ? styles.missing : styles.present}>
                     {entry.searchResults}{" "}
                     {entry.searchResults === 1 ? "result" : "results"}

@@ -80,7 +80,7 @@ export function ApprovalStates() {
                 : `${styles.evidencePanel} ${styles.evidencePanelPresent}`
             }
           >
-            <span className={styles.panelLabel}>Evidence of absence</span>
+            <span className={styles.panelLabel}>{current.evidenceLabel}</span>
             <p className={styles.trace}>
               <span className={styles.traceGlyph} aria-hidden="true">
                 ⌕

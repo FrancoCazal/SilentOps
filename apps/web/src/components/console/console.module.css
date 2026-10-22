@@ -1087,4 +1087,12 @@
   .stateTabActive {
     padding: 9px 11px;
   }
+  /* Two columns; an odd last cell spans both so no empty slot shows the
+     hairline background through. */
+  .summaryRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .summaryCell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }

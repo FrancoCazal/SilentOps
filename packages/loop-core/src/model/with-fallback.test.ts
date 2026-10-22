@@ -12,6 +12,7 @@ import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import {
   fallbackProvider,
+  fallbackTarget,
   forcedFailure,
   isRetryable,
   primaryProvider,
@@ -23,6 +24,7 @@ import {
 const KEYS = [
   "MODEL_PROVIDER",
   "MODEL",
+  "FALLBACK_PROVIDER",
   "FALLBACK_MODEL",
   "FORCE_PROVIDER_FAILURE",
   "OPENAI_API_KEY",
@@ -46,6 +48,7 @@ beforeEach(() => {
   process.env.MODEL_PROVIDER = "openai";
   delete process.env.GOOGLE_API_KEY;
   delete process.env.MODEL;
+  delete process.env.FALLBACK_PROVIDER;
   delete process.env.FALLBACK_MODEL;
   delete process.env.FORCE_PROVIDER_FAILURE;
 });
@@ -215,6 +218,33 @@ describe("fallback con Gemini", () => {
     // El entorno queda como estaba: una fuga cambiaria de provider en silencio.
     assert.equal(process.env.MODEL_PROVIDER, "openai");
     assert.equal(process.env.MODEL, "gpt-4.1");
+  });
+});
+
+/**
+ * fallbackTarget() es lo que muestra la consola en Settings. Tiene que decir
+ * lo mismo que haria withFallback(), sin tirar nunca.
+ */
+describe("fallbackTarget", () => {
+  it("describe el build del evento: Gemini Flash -> Gemini Pro", () => {
+    process.env.MODEL_PROVIDER = "google";
+    process.env.MODEL = "gemini-2.5-flash";
+    process.env.GOOGLE_API_KEY = "test-google-key";
+    process.env.FALLBACK_PROVIDER = "google";
+    process.env.FALLBACK_MODEL = "gemini-2.5-pro";
+    assert.deepEqual(fallbackTarget(), { provider: "google", model: "gemini-2.5-pro" });
+  });
+
+  it("openrouter sin FALLBACK_MODEL usa su slug por defecto", () => {
+    process.env.MODEL = "gpt-4.1";
+    assert.deepEqual(fallbackTarget(), { provider: "openrouter", model: "openai/gpt-4.1" });
+  });
+
+  it("google sin FALLBACK_MODEL no inventa modelo: el salto se rechazaria", () => {
+    process.env.MODEL = "gpt-4.1";
+    delete process.env.OPENROUTER_API_KEY;
+    process.env.GOOGLE_API_KEY = "test-google-key";
+    assert.deepEqual(fallbackTarget(), { provider: "google", model: undefined });
   });
 });
 

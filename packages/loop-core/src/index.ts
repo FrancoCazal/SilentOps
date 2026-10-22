@@ -31,7 +31,15 @@ export { verifyScope, getServiceToken, isAuth0Configured, AuthorizationError } f
 export { idempotencyKey, memoryStore, setIdempotencyStore } from "./boundary/idempotency";
 export { ambiguousExecutor, listWorkplaceTools } from "./boundary/workplace-mcp";
 export * as proposals from "./approval/store";
-export { withFallback, isRetryable, forcedFailure, resolveFor } from "./model/with-fallback";
+export {
+  withFallback,
+  isRetryable,
+  forcedFailure,
+  resolveFor,
+  primaryProvider,
+  fallbackTarget,
+  isProviderConfigured,
+} from "./model/with-fallback";
 export type { ModelRef, ProviderName, Attempt } from "./model/with-fallback";
 export { log, newRunId, loggerFor } from "./observability/log";
 export type { Logger } from "./observability/log";

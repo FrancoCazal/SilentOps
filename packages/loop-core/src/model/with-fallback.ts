@@ -102,6 +102,20 @@ export function fallbackProvider(): ProviderName {
   return others.find(isProviderConfigured) ?? others[0]!;
 }
 
+/**
+ * Where the fallback hop will go, for read-only status surfaces such as the
+ * control tower's Settings page. Never throws: `model` is undefined exactly when
+ * `withFallback` would refuse the hop for lack of a FALLBACK_MODEL.
+ */
+export function fallbackTarget(): { provider: ProviderName; model?: string } {
+  const provider = fallbackProvider();
+  const model =
+    process.env.FALLBACK_MODEL ??
+    defaultFallbackModel(provider) ??
+    (provider === "google" ? undefined : process.env.MODEL);
+  return { provider, model };
+}
+
 /** Kill switch para la toma del video: FORCE_PROVIDER_FAILURE=1 tumba el primario. */
 export function forcedFailure(): boolean {
   return process.env.FORCE_PROVIDER_FAILURE === "1";

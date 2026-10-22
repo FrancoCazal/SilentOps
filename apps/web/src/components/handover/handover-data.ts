@@ -32,6 +32,8 @@ export const tabs: readonly { id: View; label: string }[] = [
 export type ViewCopy = {
   /** Wall clock shown for this state. */
   clock: string;
+  /** Label over the search trace: an absence, or the record that exists. */
+  evidenceLabel: string;
   /** Result count of the deterministic document search. */
   result: string;
   /** True when the expected handover was NOT found. */
@@ -47,6 +49,7 @@ export type ViewCopy = {
 export const views: Record<View, ViewCopy> = {
   pending: {
     clock: "05:45",
+    evidenceLabel: "Evidence of absence",
     result: "0 results",
     resultMissing: true,
     note: "matches: [] · deterministic query, no match in the shift's document index.",
@@ -55,6 +58,7 @@ export const views: Record<View, ViewCopy> = {
   },
   approved: {
     clock: "05:47",
+    evidenceLabel: "Evidence of absence",
     result: "0 results",
     resultMissing: true,
     note: "matches: [] · document created just now, after Ana's approval.",
@@ -63,6 +67,7 @@ export const views: Record<View, ViewCopy> = {
   },
   rejected: {
     clock: "05:47",
+    evidenceLabel: "Evidence of absence",
     result: "0 results",
     resultMissing: true,
     note: "matches: [] · the proposal was discarded; nothing was written.",
@@ -71,6 +76,7 @@ export const views: Record<View, ViewCopy> = {
   },
   silent: {
     clock: "05:45",
+    evidenceLabel: "Handover on record",
     result: "1 result",
     resultMissing: false,
     note: "matches: [1] · a handover document already exists for this shift.",
@@ -158,6 +164,8 @@ export type HistoryEntry = {
   shift: "Night" | "Morning";
   outgoing: string;
   incoming: string;
+  /** The document name the detector searched for, verbatim. */
+  record: string;
   /** Result count the deterministic document search returned. */
   searchResults: number;
   outcome: HistoryOutcome;
@@ -174,6 +182,7 @@ export const history: readonly HistoryEntry[] = [
     shift: "Night",
     outgoing: "Ana",
     incoming: "Bruno",
+    record: "Handover Noche 2026-09-12",
     searchResults: 0,
     outcome: "approved",
     result: "Handover created · 3 work orders reassigned",
@@ -186,6 +195,7 @@ export const history: readonly HistoryEntry[] = [
     shift: "Morning",
     outgoing: "Bruno",
     incoming: "Ana",
+    record: "Handover Mañana 2026-09-11",
     searchResults: 1,
     outcome: "silent",
     result: "Handover already present · no proposal",
@@ -196,6 +206,7 @@ export const history: readonly HistoryEntry[] = [
     shift: "Night",
     outgoing: "Ana",
     incoming: "Bruno",
+    record: "Handover Noche 2026-09-11",
     searchResults: 0,
     outcome: "rejected",
     result: "Proposal rejected · nothing written",
@@ -208,6 +219,7 @@ export const history: readonly HistoryEntry[] = [
     shift: "Morning",
     outgoing: "Bruno",
     incoming: "Ana",
+    record: "Handover Mañana 2026-09-10",
     searchResults: 1,
     outcome: "silent",
     result: "Handover already present · no proposal",
@@ -218,6 +230,7 @@ export const history: readonly HistoryEntry[] = [
     shift: "Night",
     outgoing: "Ana",
     incoming: "Bruno",
+    record: "Handover Noche 2026-09-10",
     searchResults: 0,
     outcome: "approved",
     result: "Handover created · 1 work order reassigned",
@@ -230,6 +243,7 @@ export const history: readonly HistoryEntry[] = [
     shift: "Morning",
     outgoing: "Bruno",
     incoming: "Ana",
+    record: "Handover Mañana 2026-09-09",
     searchResults: 1,
     outcome: "silent",
     result: "Handover already present · no proposal",
