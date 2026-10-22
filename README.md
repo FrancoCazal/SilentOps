@@ -21,7 +21,7 @@ Built at the AI Tinkerers **Agents, Everywhere** global hackathon (September
 > provider fallback, and the eval harness the 15-case golden set runs on. I also
 > wrote the product spec ([SILENTOPS.md](SILENTOPS.md)) and the frozen contracts
 > and ownership map ([team-docs/](team-docs/)) that let four people build in
-> parallel on disjoint files, and ran the gates and the merges to `main`. After
+> parallel on disjoint files, and ran the gates between them. After
 > the event: CI, the frontend audit and the detector's timezone fix. The rest of
 > the team is listed under [Team](#team).
 
