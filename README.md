@@ -268,9 +268,10 @@ and nothing executes without approval.
 
 SilentOps was built at the Asunción edition of the AI Tinkerers
 [Agents, Everywhere](https://asuncion.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)
-global hackathon, hosted at FIUNA on September 12, 2026, one of the local
-sessions that ran the same day in cities around the world. Photos from the day
-are in the [event gallery](https://asuncion.aitinkerers.org/meetup/mu_ZFIr6znWcjg/gallery).
+global hackathon, hosted at the FPUNA coworking in San Lorenzo on September 12,
+2026, one of the local sessions that ran the same day in cities around the
+world. Photos from the day are in the
+[event gallery](https://asuncion.aitinkerers.org/meetup/mu_ZFIr6znWcjg/gallery).
 Banner: AI Tinkerers.
 
 ## Team
